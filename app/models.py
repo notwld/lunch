@@ -72,6 +72,7 @@ class MenuItem(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
     price = db.Column(db.Float, nullable=False)
+    type = db.Column(db.String(20), nullable=False)  # Entree, Side, Produce, Dessert, Drink
     dietary_info = db.Column(db.String(255), nullable=True)  # E.g., Vegan, Gluten-Free
     availability_dates = db.Column(db.Text, nullable=False)  # JSON list of dates (e.g., ["2023-11-20", "2023-11-21"])
 
@@ -162,21 +163,24 @@ class Cart(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationship with Parent (user)
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
     user = db.relationship('Parent', backref='carts', lazy=True)
 
     # Cart items
     cart_items = db.relationship('CartItem', backref='cart', lazy=True)
 
-    def __init__(self, user_id):
+    def __init__(self, user_id,child_id):
         self.user_id = user_id
+        self.child_id = child_id
         self.total_price = 0.0  # start with 0 price
 
     def calculate_total(self):
         self.total_price = sum([item.price for item in self.cart_items])
         db.session.commit()
-
+        
+    def get_cart_items(self):
+        return self.cart_items
+    
 
 class CartItem(db.Model):
     __tablename__ = 'cart_items'
@@ -184,19 +188,43 @@ class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cart_id = db.Column(db.Integer, db.ForeignKey('carts.id'), nullable=False)
     day = db.Column(db.String(20), nullable=False)
-    entree = db.Column(db.String(100))
-    side = db.Column(db.String(100))
-    produce = db.Column(db.String(100))
-    dessert = db.Column(db.String(100))
-    drink = db.Column(db.String(100))
+    
+    # Foreign keys to MenuItem
+    entree_id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), nullable=True)
+    side_id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), nullable=True)
+    produce_id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), nullable=True)
+    dessert_id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), nullable=True)
+    drink_id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), nullable=True)
+    
+    # Prices are now calculated from the MenuItem model
+    entree_price = db.Column(db.Float, nullable=False, default=0.0)
+    side_price = db.Column(db.Float, nullable=False, default=0.0)
+    produce_price = db.Column(db.Float, nullable=False, default=0.0)
+    dessert_price = db.Column(db.Float, nullable=False, default=0.0)
+    drink_price = db.Column(db.Float, nullable=False, default=0.0)
+    
+    entree = db.relationship('MenuItem', foreign_keys=[entree_id], lazy=True)
+    side = db.relationship('MenuItem', foreign_keys=[side_id], lazy=True)
+    produce = db.relationship('MenuItem', foreign_keys=[produce_id], lazy=True)
+    dessert = db.relationship('MenuItem', foreign_keys=[dessert_id], lazy=True)
+    drink = db.relationship('MenuItem', foreign_keys=[drink_id], lazy=True)
+    
     price = db.Column(db.Float, nullable=False)
 
-    def __init__(self, cart_id, day, entree, side, produce, dessert, drink, price):
+    def __init__(self, cart_id, day, entree, side, produce, dessert, drink):
         self.cart_id = cart_id
         self.day = day
-        self.entree = entree
-        self.side = side
-        self.produce = produce
-        self.dessert = dessert
-        self.drink = drink
-        self.price = price
+        self.entree_id = entree.id if entree else None
+        self.side_id = side.id if side else None
+        self.produce_id = produce.id if produce else None
+        self.dessert_id = dessert.id if dessert else None
+        self.drink_id = drink.id if drink else None
+        
+        # Calculate prices from menu items
+        self.entree_price = entree.price if entree else 0.0
+        self.side_price = side.price if side else 0.0
+        self.produce_price = produce.price if produce else 0.0
+        self.dessert_price = dessert.price if dessert else 0.0
+        self.drink_price = drink.price if drink else 0.0
+        
+        self.price = self.entree_price + self.side_price + self.produce_price + self.dessert_price + self.drink_price

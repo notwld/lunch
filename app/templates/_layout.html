@@ -53,16 +53,11 @@
                    </ul>
                 
         </div>
-    {% block content %}{% endblock %}
-        </div>
-        {% else %}
-            <h1>
-                Please login to access the dashboard
-            </h1>
-            
+        
+       
         {% endif %}
     
-
+        {% block content %}{% endblock %}
 
    
 </body>

@@ -6,12 +6,14 @@ from flask_login import login_user,current_user,login_required
 dashboard = Blueprint('dashboard', __name__)
 
 @dashboard.route('/', methods=['GET'])
+@login_required
 def get_users():
     #list all childern of current user
     children = Child.query.filter_by(parent_id=current_user.id).all()
     
     
     return render_template('dashboard.html', current_user=current_user ,children=children)
+
 
 
 @dashboard.route('/add-child', methods=['GET'])

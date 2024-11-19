@@ -1,0 +1,35 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold text-center mb-6">Cart</h1>
+    <table class="w-full border-collapse border border-gray-300">
+        <thead>
+            <tr>
+                <th class="p-3 text-left">Item</th>
+                <th class="p-3 text-left">Price</th>
+                <th class="p-3 text-left">Quantity</th>
+                <th class="p-3 text-left">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td class="p-3">{{ item.day }} - {{ item.entree }}</td>
+                <td class="p-3">{{ item.price }}</td>
+                <td class="p-3">1</td> <!-- Assuming 1 quantity per item, adjust if necessary -->
+                <td class="p-3">{{ item.price }}</td> <!-- Total per item is its price here -->
+            </tr>
+            {% endfor %}
+            <tr class="font-bold">
+                <td colspan="3" class="p-3 text-right">Total Price</td>
+                <td class="p-3">{{ cart.total_price }}</td>  <!-- Total price from the Cart model -->
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="flex justify-end mt-4">
+        <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Checkout</button>
+    </div>
+</div>
+{% endblock %}

@@ -4,6 +4,9 @@ from flask_login import login_user,logout_user
 
 auth = Blueprint('auth', __name__)
 
+@auth.route('/login', methods=['GET'])
+def login_form():
+    return render_template('dashboard.html')
 
 @auth.route('/login', methods=['POST'])
 def login():

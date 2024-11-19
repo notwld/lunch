@@ -14,13 +14,14 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {% for day in weekdays %}
         <div class="bg-white shadow-md rounded-lg p-4">
-            <h2 class="text-lg font-semibold text-center {% if locked_days[day] %}text-gray-400{% endif %}">
+            <h2 class="text-lg font-semibold text-center {% if locked_days[day] %}text-gray-400{% endif %}"
+                x-text="dailySelections['day{{ loop.index0 }}'].day">
                 {{ day.strftime('%A, %B %d') }}
             </h2>
             {% if locked_days[day] %}
-                <div class="text-center mt-4">
-                    <img src="{{ url_for('static', filename='assets/lock.png') }}" alt="Locked" class="mx-auto mt-4">
-                </div>
+            <div class="text-center mt-4">
+                <img src="{{ url_for('static', filename='assets/lock.png') }}" alt="Locked" class="mx-auto mt-4">
+            </div>
 
             {% else %}
             <form class="mt-4">
@@ -90,16 +91,29 @@
         <h3 class="text-2xl font-semibold">Monthly Total</h3>
         <p class="text-xl font-bold" x-text="'$' + monthlyTotal()"></p>
     </div>
+    <div class="text-center mt-8">
+        <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700" x-on:click="addToCart()">Add to
+            Cart</button>
+    </div>
 </div>
 
 <script>
     document.addEventListener("alpine:init", () => {
         Alpine.data("menuData", () => ({
             dailySelections: {},
+            items: [],
+            menu: {
+                entrees: {{ menu.entrees|tojson }},
+                sides: {{ menu.sides|tojson }},
+                produce: {{ menu.produce|tojson }},
+                desserts: {{ menu.desserts|tojson }},
+                drinks: {{ menu.drinks|tojson }}
+            },
             init() {
                 // Initialize dailySelections for all days
                 {% for day in weekdays %}
                 this.dailySelections['day{{ loop.index0 }}'] = {
+                    day: '{{ day.strftime('%A, %B %d') }}',
                     entree: 0,
                     side: 0,
                     produce: 0,
@@ -128,8 +142,60 @@
                     .reduce((total, dayKey) => total + parseFloat(this.dailyTotal(dayKey)), 0)
                     .toFixed(2);
             },
+            
+            addToCart() {
+                // Get the selected child
+                const childId = document.querySelector('select').value;
+
+                // Initialize the array to hold the selected items
+                let selectedItems = [];
+
+                // Loop through each day's selections
+                Object.keys(this.dailySelections).forEach(dayKey => {
+                    const daySelection = this.dailySelections[dayKey];
+
+                    // For each meal type, find the selected item name and price
+                    const items = {
+                        day: daySelection.day,
+                        entree: this.getItemDetails(daySelection.entree, this.menu.entrees),
+                        side: this.getItemDetails(daySelection.side, this.menu.sides),
+                        produce: this.getItemDetails(daySelection.produce, this.menu.produce),
+                        dessert: this.getItemDetails(daySelection.dessert, this.menu.desserts),
+                        drink: this.getItemDetails(daySelection.drink, this.menu.drinks)
+                    };
+
+                    // Add the day's items to the selectedItems array
+                    selectedItems.push(items);
+                });
+
+                fetch('/add-to-cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        child_id: childId,
+                        items: selectedItems,
+                    }),
+                }).then(response => {
+                    if (response.ok) {
+                        // alert('Items added to cart successfully');
+                        // window.location.href = '/cart';
+                    } else {
+                        alert('Failed to add items to cart');
+                    }
+                });
+            },
+
+            // Helper function to get the name and price of the selected item
+            getItemDetails(selectedPrice, menuCategory) {
+                if (selectedPrice === 0) return { name: 'None', price: 0 }; // If nothing is selected
+                const item = menuCategory.find(i => i.price == selectedPrice);
+                return item ? { name: item.name, price: item.price } : { name: 'Unknown', price: 0 };
+            }
         }));
     });
 </script>
 
+</div>
 {% endblock %}
