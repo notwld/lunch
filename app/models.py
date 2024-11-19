@@ -1,9 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
+from datetime import datetime
 
 db = SQLAlchemy()
 
-class Parent(db.Model):
+class Parent(UserMixin,db.Model):
     __tablename__ = 'parents'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -60,3 +62,141 @@ class Child(db.Model):
     
     def __repr__(self):
         return f"<Child {self.first_name} {self.last_name}>"
+    
+class MenuItem(db.Model):
+    __tablename__ = 'menu_items'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    
+    # Item Info
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    price = db.Column(db.Float, nullable=False)
+    dietary_info = db.Column(db.String(255), nullable=True)  # E.g., Vegan, Gluten-Free
+    availability_dates = db.Column(db.Text, nullable=False)  # JSON list of dates (e.g., ["2023-11-20", "2023-11-21"])
+
+    def __repr__(self):
+        return f"<MenuItem {self.name}>"
+
+
+class Order(db.Model):
+    __tablename__ = 'orders'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    
+    # Order Info
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=False)
+    order_date = db.Column(db.DateTime, nullable=False)  # When the order was placed
+    total_cost = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default="Pending")  # Pending, Paid, Completed
+
+    # Relationships
+    child = db.relationship('Child', backref='orders')
+    parent = db.relationship('Parent', backref='orders')
+    order_items = db.relationship('OrderItem', back_populates='order', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f"<Order {self.id} - Total: {self.total_cost}>"
+
+
+class OrderItem(db.Model):
+    __tablename__ = 'order_items'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    
+    # Order Item Info
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    menu_item_id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    
+    # Relationships
+    order = db.relationship('Order', back_populates='order_items')
+    menu_item = db.relationship('MenuItem', backref='order_items')
+
+    def __repr__(self):
+        return f"<OrderItem {self.menu_item.name} x{self.quantity}>"
+
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    
+    # Payment Info
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    payment_date = db.Column(db.DateTime, nullable=False)
+    amount_paid = db.Column(db.Float, nullable=False)
+    payment_method = db.Column(db.String(50), nullable=False)  # E.g., Credit Card, PayPal
+    status = db.Column(db.String(20), nullable=False, default="Success")  # Success, Failed
+
+    # Relationship
+    order = db.relationship('Order', backref='payments')
+
+    def __repr__(self):
+        return f"<Payment {self.id} - Amount: {self.amount_paid}>"
+
+
+class FoodRating(db.Model):
+    __tablename__ = 'food_ratings'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    
+    # Rating Info
+    parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=False)
+    menu_item_id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1 to 5
+    review_date = db.Column(db.DateTime, nullable=False)
+
+    # Relationships
+    parent = db.relationship('Parent', backref='ratings')
+    menu_item = db.relationship('MenuItem', backref='ratings')
+
+    def __repr__(self):
+        return f"<FoodRating {self.menu_item.name} - Rating: {self.rating}>"
+
+class Cart(db.Model):
+    __tablename__ = 'carts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=False)
+    total_price = db.Column(db.Float, nullable=False, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship with Parent (user)
+    user = db.relationship('Parent', backref='carts', lazy=True)
+
+    # Cart items
+    cart_items = db.relationship('CartItem', backref='cart', lazy=True)
+
+    def __init__(self, user_id):
+        self.user_id = user_id
+        self.total_price = 0.0  # start with 0 price
+
+    def calculate_total(self):
+        self.total_price = sum([item.price for item in self.cart_items])
+        db.session.commit()
+
+
+class CartItem(db.Model):
+    __tablename__ = 'cart_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    cart_id = db.Column(db.Integer, db.ForeignKey('carts.id'), nullable=False)
+    day = db.Column(db.String(20), nullable=False)
+    entree = db.Column(db.String(100))
+    side = db.Column(db.String(100))
+    produce = db.Column(db.String(100))
+    dessert = db.Column(db.String(100))
+    drink = db.Column(db.String(100))
+    price = db.Column(db.Float, nullable=False)
+
+    def __init__(self, cart_id, day, entree, side, produce, dessert, drink, price):
+        self.cart_id = cart_id
+        self.day = day
+        self.entree = entree
+        self.side = side
+        self.produce = produce
+        self.dessert = dessert
+        self.drink = drink
+        self.price = price

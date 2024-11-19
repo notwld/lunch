@@ -1,92 +1,43 @@
 {% extends "_layout.html" %}
 
 {% block content %}
-<div class="children" id="wrapper">
-    <div id="content_header"><span>New Child</span></div>
-    <div id="content">
-        <div data-controller="terms-and-conditions">
-            <div class="form_style">
-                <form class="new_child" id="new_child" onsubmit="event.preventDefault();">
-
-                    <!-- Child Info Fields -->
-                    <div class="field"><label for="child_first_name">First Name</label><input type="text"
-                            name="child[first_name]" id="child_first_name" data-validate="true"></div>
-                    <div class="field"><label for="child_last_name">Last Name</label><input type="text"
-                            name="child[last_name]" id="child_last_name" data-validate="true"></div>
-
-                    <div class="field"><label for="child_state">State</label><input type="text" name="child[state]"
-                            id="child_state" data-validate="true"></div>
-                    <div class="field"><label for="child_county">County</label><input type="text" name="child[county]"
-                            id="child_county" data-validate="true"></div>
-                    <div class="field"><label for="child_school">School</label><input type="text" name="child[school]"
-                            id="child_school" data-validate="true"></div>
-                    <div class="field"><label for="child_grade">Grade</label><input type="text" name="child[grade]"
-                            id="child_grade" data-validate="true"></div>
-
-                    <div class="field"><label for="child_allergies">Allergies</label><input type="text"
-                            name="child[allergies]" id="child_allergies"></div>
-
-                    <div class="field field2x">
-                        <label for="custom_allergy">Add Allergy</label>
-                        <input type="text" name="custom_allergy" id="custom_allergy" value="" size="30">
-                    </div>
-
-                    <div class="clear submit">
-                        <div class="field_with_errors hide"
-                            data-terms-and-conditions-target="termsAndConditionsErrorMessage">
-                            <div class="message">You must accept T&amp;C to be able to register your child</div>
-                        </div>
-                        <!-- <button alt="Save Changes" class="button_save_changes"
-                             type="button" id="save_button">
-                        save</button> -->
-                    </div>
-                    <button type="submit" id="button_save_changes">
-                        Save Changes
-                    </button>
-                </form>
+<div class="w-screen flex justify-center items-center mt-8">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-semibold mb-6 text-center">Add New Child</h2>
+        <form action="/add-child" method="POST">
+            <div class="mb-4">
+                <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
+                <input type="text" name="first_name" id="first_name" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="First Name" required>
             </div>
-        </div>
+            <div class="mb-4">
+                <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
+                <input type="text" name="last_name" id="last_name" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="Last Name" required>
+            </div>
+            <div class="mb-4">
+                <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+                <input type="text" name="state" id="state" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="State" required>
+            </div>
+            <div class="mb-4">
+                <label for="county" class="block text-sm font-medium text-gray-700">County</label>
+                <input type="text" name="county" id="county" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="County" required>
+            </div>
+            <div class="mb-4">
+                <label for="school" class="block text-sm font-medium text-gray-700">School</label>
+                <input type="text" name="school" id="school" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="School" required>
+            </div>
+            <div class="mb-4">
+                <label for="grade" class="block text-sm font-medium text-gray-700">Grade</label>
+                <input type="text" name="grade" id="grade" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="Grade" required>
+            </div>
+            <div class="mb-4">
+                <label for="allergies" class="block text-sm font-medium text-gray-700">Allergies</label>
+                <textarea name="allergies" id="allergies" rows="3" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="Any known allergies (optional)"></textarea>
+            </div>
+            <div class="flex justify-center">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Add Child</button>
+            </div>
+        </form>
     </div>
 </div>
-
-<script>
-    // Handle form submission
-    const submit = (e) => {
-        const token = localStorage.getItem('jwt_token');
-        e.preventDefault();  // Prevent the form from submitting normally
-        console.log('Form submitted');
-        
-        const childData = {
-            first_name: document.getElementById('child_first_name').value,
-            last_name: document.getElementById('child_last_name').value,
-            state: document.getElementById('child_state').value,
-            county: document.getElementById('child_county').value,
-            school: document.getElementById('child_school').value,
-            grade: document.getElementById('child_grade').value,
-            allergies: document.getElementById('child_allergies').value
-        };
-        console.log(childData);
-
-        // API Call to save child
-        fetch('/api/add-child', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(childData)
-        }).then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                // Optionally redirect or update UI based on response
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-
-    // Attach event listener to form submission
-    document.getElementById('new_child').addEventListener('submit', submit);
-</script>
 
 {% endblock %}

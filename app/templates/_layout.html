@@ -4,142 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/stylesheet.css') }}">
-    <title>Parent Login</title>
+    <title>Parent Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 </head>
 
 <body>
-    <div id="header">
-        <!-- Login Form Section -->
-        <div id="login_bar" data-section="login">
-            <form id="login_form">
-                <div id="login_username">
-                    <input type="text" name="email" id="bar_username" placeholder="Email...">
-                </div>
-                <div id="login_password">
-                    <input type="password" name="password" id="bar_password" placeholder="Password...">
-                </div>
-                <button type="button" id="login_button">Login</button>
-                <div id="reset_password"><a href="/users/passwords/new">Reset password</a></div>
+    <div class="flex flex-col items-center justify-center h-28">
+        
+        {% if current_user.is_authenticated %}
+        <div class="bg-gray-300 flex justify-between m-4 p-4 items-center w-screen">
+            <h1>Welcome, {{ current_user.first_name }}</h1>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+        {% else %}
+            <form action="{{ url_for('auth.login') }}" method="post">
+                <input type="text" name="email" placeholder="Username" class="mr-2 rounded-lg ring-2 ring-gray-300 p-2">
+                <input type="password" name="password" placeholder="Password" class="mr-2 rounded-lg ring-2 ring-gray-300 p-2">
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mr-2 ">Login</button>
+                    <a href="{{ url_for('auth.register') }}" class="text-blue-500">Register</a>
             </form>
-        </div>
-
-        <!-- Logged-in User Info Section -->
-        <div id="login_bar" data-section="logged_in" style="display: none;">
-            <div id="logged_in">
-                <p id="welcome_message">Welcome, Test!</p>
-                <div>
-                    <a href="/orders/shopping_cart">Shopping Cart</a> |
-                    <a href="/parents/42292/edit">Profile</a> |
-                    <a href="/parents/dashboard">Dashboard</a> |
-                    <a id="logout_button">Logout</a>
-                </div>
-            </div>
-        </div>
-
-        <a href="/"><img alt="Express Lunches" id="logo" src="{{ url_for('static', filename='assets/logo.png') }}"></a>
-        <div id="main-nav" class="main-nav1">
-            <ul id="nav">
-                <li><a href="/home">Home</a></li>
-                <li><a href="/how_it_works">How It Works / Sample Menu</a></li>
-                <li><a href="/catering">Catering</a></li>
-                <li><a href="/contact">Contact</a></li>
-            </ul>
-        </div>
-        <div id="main-nav" class="main-nav2" style="display: none;">
-            <ul id="nav" class="sf-js-enabled sf-arrows" style="touch-action: pan-y;">
-                <li><a href="/home">Home</a></li>
-                <li><a href="/how_it_works">How It Works / Sample Menu</a></li>
-                <li><a href="/catering">Catering</a></li>
-                <li><a href="/contact">Contact</a></li>
-                <li><a href="/parents/dashboard" class="sf-with-ul">Parent Account</a>
-                    <ul style="display: none; float: none; width: 15em;">
-                        <li style="white-space: normal; float: left; width: 100%;"><a href="/parents/dashboard"
-                                style="float: none; width: auto;">Parent Dashboard</a></li>
-                        <li style="white-space: normal; float: left; width: 100%;"><a href="/children"
-                                style="float: none; width: auto;">Manage Children</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+            
+        {% endif %}
     </div>
-
+    <div>
+        {% for message in get_flashed_messages() %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative my-3" role="alert">
+            <strong class="font-bold">Success!</strong>
+            <span class="block sm:inline">{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% if current_user.is_authenticated %}
+        <div class="flex flex-row justify-center items-center space-x-4">
+           
+                   <ul class="flex flex-row justify-center items-center space-x-4">
+                    <li><a href="{{ url_for('dashboard.get_users') }}"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+                        >Dashboard</a></li>
+                    <li><a href="{{ url_for('dashboard.add_child') }}"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+                        >Add Child</a></li>
+                    <li><a href="{{ url_for('order.order_page') }}"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+                        >Order</a></li>
+                   </ul>
+                
+        </div>
     {% block content %}{% endblock %}
+        </div>
+        {% else %}
+            <h1>
+                Please login to access the dashboard
+            </h1>
+            
+        {% endif %}
+    
 
-    <div id="footer">
-        <ul class="nav">
-            <li><a href="/home">Home</a></li>
-            <li><a href="/terms_and_conditions">Terms And Conditions</a></li>
-            <li><a href="/how_it_works">How It Works / Sample Menu</a></li>
-            <li><a href="/catering">Catering</a></li>
-            <li><a href="/contact">Contact</a></li>
-        </ul>
-        <span id="copyright">© 2024 Simply Gourmet Lunches. All rights reserved.</span>
-    </div>
+
+   
 </body>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<script>
-    // Check if the user is already logged in
-    $(document).ready(function () {
-        const token = localStorage.getItem('jwt_token');
-        const parent = localStorage.getItem('parent');
-
-        if (token && parent) {
-            $('div[data-section="login"]').hide();
-            $('div[data-section="logged_in"]').show();
-            $(".main-nav1").hide();
-            $(".main-nav2").show();
-            $("#welcome_message").text(`Welcome, ${JSON.parse(parent).first_name}!`);
-        }
-    });
-
-    // Handle Login Form Submission
-    $("#login_button").click(async function () {
-        const email = $("#bar_username").val();
-        const password = $("#bar_password").val();
-
-        try {
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const parent = data.parent;
-
-                // Save the token for authenticated requests
-                localStorage.setItem('jwt_token', data.access_token);
-                localStorage.setItem('parent', JSON.stringify(parent));
-
-                // Update the UI
-                $('div[data-section="login"]').hide();
-                $('div[data-section="logged_in"]').show();
-                $(".main-nav1").hide();
-                $(".main-nav2").show();
-                $("#welcome_message").text(`Welcome, ${parent.first_name}!`);
-            } else {
-                const error = await response.json();
-                alert(error.error || 'Login failed. Please try again.');
-            }
-        } catch (err) {
-            console.error("Error logging in:", err);
-            alert("An error occurred. Please try again later.");
-        }
-    });
-
-    // Handle Logout
-    $("#logout_button").click(function () {
-        // Remove the JWT token and reset the UI
-        localStorage.removeItem('jwt_token');
-        localStorage.removeItem('parent');
-        window.location.reload();
-    });
-</script>
 
 </html>

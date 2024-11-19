@@ -1,0 +1,135 @@
+{% extends '_layout.html' %}
+
+{% block title %}Place an Order{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-8" x-data="menuData">
+    <h1 class="text-3xl font-bold text-center mb-6">Monthly Lunch Order</h1>
+    <select class="w-full px-2 py-1 my-3 border rounded-md">
+        <option value="0">Select Childern</option>
+        {% for child in children %}
+        <option value="{{ child.id }}">{{ child.first_name }} {{ child.last_name }}</option>
+        {% endfor %}
+    </select>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {% for day in weekdays %}
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <h2 class="text-lg font-semibold text-center {% if locked_days[day] %}text-gray-400{% endif %}">
+                {{ day.strftime('%A, %B %d') }}
+            </h2>
+            {% if locked_days[day] %}
+                <div class="text-center mt-4">
+                    <img src="{{ url_for('static', filename='assets/lock.png') }}" alt="Locked" class="mx-auto mt-4">
+                </div>
+
+            {% else %}
+            <form class="mt-4">
+                <!-- Entree -->
+                <label class="block text-sm font-medium">Entree:</label>
+                <select class="w-full px-2 py-1 border rounded-md"
+                    x-model="dailySelections['day{{ loop.index0 }}'].entree">
+                    <option value="0">Select an Entree</option>
+                    {% for item in menu.entrees %}
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Sides -->
+                <label class="block text-sm font-medium mt-2">Sides:</label>
+                <select class="w-full px-2 py-1 border rounded-md"
+                    x-model="dailySelections['day{{ loop.index0 }}'].side">
+                    <option value="0">Select a Side</option>
+                    {% for item in menu.sides %}
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Produce -->
+                <label class="block text-sm font-medium mt-2">Produce:</label>
+                <select class="w-full px-2 py-1 border rounded-md"
+                    x-model="dailySelections['day{{ loop.index0 }}'].produce">
+                    <option value="0">Select Produce</option>
+                    {% for item in menu.produce %}
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Dessert -->
+                <label class="block text-sm font-medium mt-2">Dessert:</label>
+                <select class="w-full px-2 py-1 border rounded-md"
+                    x-model="dailySelections['day{{ loop.index0 }}'].dessert">
+                    <option value="0">Select a Dessert</option>
+                    {% for item in menu.desserts %}
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Drink -->
+                <label class="block text-sm font-medium mt-2">Drink:</label>
+                <select class="w-full px-2 py-1 border rounded-md"
+                    x-model="dailySelections['day{{ loop.index0 }}'].drink">
+                    <option value="0">Select a Drink</option>
+                    {% for item in menu.drinks %}
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Total -->
+                <div class="mt-4">
+                    <span class="font-semibold">Total:</span>
+                    <span class="text-lg font-bold" x-text="'$' + dailyTotal('day{{ loop.index0 }}')"></span>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Monthly Total -->
+    <div class="mt-8 bg-gray-100 shadow-md rounded-lg p-4 text-center">
+        <h3 class="text-2xl font-semibold">Monthly Total</h3>
+        <p class="text-xl font-bold" x-text="'$' + monthlyTotal()"></p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("menuData", () => ({
+            dailySelections: {},
+            init() {
+                // Initialize dailySelections for all days
+                {% for day in weekdays %}
+                this.dailySelections['day{{ loop.index0 }}'] = {
+                    entree: 0,
+                    side: 0,
+                    produce: 0,
+                    dessert: 0,
+                    drink: 0,
+                };
+                {% endfor %}
+            },
+            // Function to ensure all values are numeric
+            parseNumber(value) {
+                return parseFloat(value) || 0;
+            },
+            dailyTotal(dayKey) {
+                const daySelection = this.dailySelections[dayKey];
+                // Calculate the total for the day, ensuring that each value is numeric
+                return (
+                    this.parseNumber(daySelection.entree) +
+                    this.parseNumber(daySelection.side) +
+                    this.parseNumber(daySelection.produce) +
+                    this.parseNumber(daySelection.dessert) +
+                    this.parseNumber(daySelection.drink)
+                ).toFixed(2);
+            },
+            monthlyTotal() {
+                return Object.keys(this.dailySelections)
+                    .reduce((total, dayKey) => total + parseFloat(this.dailyTotal(dayKey)), 0)
+                    .toFixed(2);
+            },
+        }));
+    });
+</script>
+
+{% endblock %}
