@@ -1,0 +1,89 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="parents" id="wrapper">
+    <div id="content_header"><span>Your Account</span></div>
+    <div id="content">
+        <div class="sidebar cart">
+            <div class="inner">
+                <h2 class="center">Your Order History</h2>
+                <div class="right_content_box">
+                    <div class="cart_details">
+                        <p>10 days in cart</p>
+                        <p>Current Balance:
+                            $0.00</p>
+                    </div>
+                    <div class="payment_misc"><a style="" class=" btn2 button_green"
+                            href="/payments/new?add_credit=true&amp;only_due_payment=true"> Add Credit</a></div>
+                </div>
+            </div>
+        </div>
+        <div id="flash-notice">Logged in!</div>
+        <div class="content_left">
+            <h1 class="style">Dashboard</h1>
+            <ul class="dashboard_buttons section">
+                <li class="btn-well"><a class="btn btn-big" href="/children/101915/orders">View Your Orders</a></li>
+                <li class="btn-well"><a class="btn btn-big" href="/children/101915/orders/new">Place an Order</a></li>
+            </ul>
+            <div class="section">
+                <h4>Child Accounts</h4>
+                <ul class="person_cards">
+
+                </ul>
+            </div>
+            <div class="section">
+                <h4>Parent / Guardian Info</h4>
+                <ul class="person_cards">
+                    <li>
+                        <div class="info">
+                            <p class="fname">Test test</p>
+                            <p class="add">123 abc</p>
+                            <p class="phone">Work: Not Listed
+                                / Cell: Not Listed</p>
+                        </div>
+                        <div class="actions"><a class="btn" href="/parents/42292/edit">Edit Info</a><a class="btn"
+                                href="/api/add-child">Add Child</a><a class="btn" href="/payments">Payment Info</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('jwt_token');
+        fetch(`/api/get/${JSON.parse(localStorage.getItem('parent')).id}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+
+            }
+        }).then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.querySelector('.fname').textContent = data.first_name + ' ' + data.last_name;
+                document.querySelector('.add').textContent = data.address;
+                document.querySelector('.phone').textContent = `Work: ${data.work_phone} / Cell: ${data.cell_phone}`;
+                const person_cards = document.querySelector('.person_cards');
+                for (const child of data.children) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                    
+                        <div class="info">
+                            <p class="fname">${child.first_name} ${child.last_name}</p>
+                            <p class="add">${child.school}</p>
+                            <p class="phone">Grade: ${child.grade}</p>
+                        </div>
+                        <div class="actions">
+                            <a class="btn" href="/children/${child.id}/edit">Edit Child</a>
+                            <a class="btn" href="/children/${child.id}/orders">View Orders</a>
+                        </div>
+                    `;
+                    person_cards.appendChild(li);
+                }
+            });
+    });
+</script>
+{% endblock %}

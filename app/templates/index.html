@@ -1,0 +1,299 @@
+{% extends '_layout.html' %}
+
+{% block content %}
+<div class="parents" id="wrapper">
+    <div id="content_header"><span>Registration</span></div>
+    <div id="content">
+        <div class="form_style" data-controller="terms-and-conditions">
+            <form class="new_parent" id="registerParentForm" data-target="terms-and-conditions.form" novalidate="novalidate"
+                data-client-side-validations="{&quot;html_settings&quot;:{&quot;type&quot;:&quot;ActionView::Helpers::FormBuilder&quot;,&quot;input_tag&quot;:&quot;\u003cdiv class=\&quot;field_with_errors\&quot;\u003e\u003cspan id=\&quot;input_tag\&quot;\u003e\u003c/span\u003e\u003clabel for=\&quot;\&quot; class=\&quot;message\&quot;\u003e\u003c/label\u003e\u003c/div\u003e&quot;,&quot;label_tag&quot;:&quot;\u003cdiv class=\&quot;field_with_errors\&quot;\u003e\u003clabel id=\&quot;label_tag\&quot;\u003e\u003c/label\u003e\u003c/div\u003e&quot;},&quot;number_format&quot;:{&quot;separator&quot;:&quot;.&quot;,&quot;delimiter&quot;:&quot;,&quot;},&quot;validators&quot;:{&quot;parent[user_attributes][email]&quot;:{&quot;presence&quot;:[{&quot;message&quot;:&quot;can't be blank&quot;}],&quot;uniqueness&quot;:[{&quot;message&quot;:&quot;has already been taken&quot;}],&quot;format&quot;:[{&quot;message&quot;:&quot;is invalid&quot;,&quot;with&quot;:{&quot;source&quot;:&quot;^([^\\s]+)@((?:[-a-z0-9]+\\.)+[a-z]{2,})$&quot;,&quot;options&quot;:&quot;i&quot;}}]},&quot;parent[address_attributes][address_line]&quot;:{&quot;presence&quot;:[{&quot;message&quot;:&quot;can't be blank&quot;}]},&quot;parent[address_attributes][state]&quot;:{&quot;presence&quot;:[{&quot;message&quot;:&quot;can't be blank&quot;}]},&quot;parent[first_name]&quot;:{&quot;presence&quot;:[{&quot;message&quot;:&quot;can't be blank&quot;}]},&quot;parent[last_name]&quot;:{&quot;presence&quot;:[{&quot;message&quot;:&quot;can't be blank&quot;}]},&quot;parent[city]&quot;:{&quot;presence&quot;:[{&quot;message&quot;:&quot;can't be blank&quot;}]},&quot;parent[zip]&quot;:{&quot;presence&quot;:[{&quot;message&quot;:&quot;can't be blank&quot;}],&quot;numericality&quot;:[{&quot;messages&quot;:{&quot;numericality&quot;:&quot;is not a number&quot;}}]},&quot;parent[home_phone]&quot;:{&quot;presence&quot;:[{&quot;message&quot;:&quot;can't be blank&quot;}]}}}"
+                action="/parents" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token"
+                    value="MMzQc6YCFSJFNicPKiRBgaK6kksiLe_OPuJTl_NxipTPFDSdiCD7PgpPYkTDLH5uAs6tJTT09Mc6mBn0ezBL1A">
+                <h2>Account Info</h2>
+                <div class="field"><label for="parent_user_attributes_email">Email</label><input
+                        data-terms-and-conditions-target="requiredFields" type="text"
+                        name="parent[user_attributes][email]" id="parent_user_attributes_email" data-validate="true">
+                </div>
+                <div class="field"><label for="parent_user_attributes_password">Password</label><input
+                        data-terms-and-conditions-target="requiredFields" type="password"
+                        name="parent[user_attributes][password]" id="parent_user_attributes_password"
+                        data-validate="true"></div>
+                <div class="field"><label for="parent_user_attributes_password_confirmation">Password
+                        confirmation</label><input data-terms-and-conditions-target="requiredFields" type="password"
+                        name="parent[user_attributes][password_confirmation]"
+                        id="parent_user_attributes_password_confirmation"></div>
+                <div class="clear">
+                    <h2>Parent Info</h2>
+                    <div class="field"><label for="parent_first_name">First name</label><input
+                            data-terms-and-conditions-target="requiredFields" type="text" name="parent[first_name]"
+                            id="parent_first_name" data-validate="true"></div>
+                    <div class="field"><label for="parent_last_name">Last name</label><input
+                            data-terms-and-conditions-target="requiredFields" type="text" name="parent[last_name]"
+                            id="parent_last_name" data-validate="true"></div>
+                    <div class="field"><label for="parent_address_attributes_address_line">Address</label><input
+                            data-terms-and-conditions-target="requiredFields" type="text"
+                            name="parent[address_attributes][address_line]" id="parent_address_attributes_address_line"
+                            data-validate="true"></div>
+                    <div class="field"><label for="parent_address_attributes_state">State</label>
+                        <select id="state" name="parent[address_attributes][state]" style="height: fit-content;
+                        border: 5px solid #F7F8FA;
+                        background: #fff;
+                        -webkit-box-shadow: inset 0px 0px 1px 1px #D5D9DA;
+                        -moz-box-shadow: inset 0px 0px 1px 1px #D5D9DA;
+                        box-shadow: inset 0px 0px 1px 1px #D5D9DA;
+                        padding: 10px;
+                        width: 430px;
+                        -webkit-border-radius: 4px;
+                        -moz-border-radius: 4px;
+                        border-radius: 4px;">
+                            <option value="" data-select2-id="2">Select a State</option>
+                            <option value="Alaska">Alaska</option>
+                            <option value="Alabama">Alabama</option>
+                            <option value="Arkansas">Arkansas</option>
+                            <option value="Arizona">Arizona</option>
+                            <option value="California">California</option>
+                            <option value="Colorado">Colorado</option>
+                            <option value="Connecticut">Connecticut</option>
+                            <option value="District of Columbia">District of Columbia</option>
+                            <option value="Delaware">Delaware</option>
+                            <option value="Florida">Florida</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Hawaii">Hawaii</option>
+                            <option value="Iowa">Iowa</option>
+                            <option value="Idaho">Idaho</option>
+                            <option value="Illinois">Illinois</option>
+                            <option value="Indiana">Indiana</option>
+                            <option value="Kansas">Kansas</option>
+                            <option value="Kentucky">Kentucky</option>
+                            <option value="Louisiana">Louisiana</option>
+                            <option value="Massachusetts">Massachusetts</option>
+                            <option value="Maryland">Maryland</option>
+                            <option value="Maine">Maine</option>
+                            <option value="Michigan">Michigan</option>
+                            <option value="Minnesota">Minnesota</option>
+                            <option value="Missouri">Missouri</option>
+                            <option value="Mississippi">Mississippi</option>
+                            <option value="Montana">Montana</option>
+                            <option value="North Carolina">North Carolina</option>
+                            <option value="North Dakota">North Dakota</option>
+                            <option value="Nebraska">Nebraska</option>
+                            <option value="New Hampshire">New Hampshire</option>
+                            <option value="New Jersey">New Jersey</option>
+                            <option value="New Mexico">New Mexico</option>
+                            <option value="Nevada">Nevada</option>
+                            <option value="New York">New York</option>
+                            <option value="Ohio">Ohio</option>
+                            <option value="Oklahoma">Oklahoma</option>
+                            <option value="Oregon">Oregon</option>
+                            <option value="Pennsylvania">Pennsylvania</option>
+                            <option value="Rhode Island">Rhode Island</option>
+                            <option value="South Carolina">South Carolina</option>
+                            <option value="South Dakota">South Dakota</option>
+                            <option value="Tennessee">Tennessee</option>
+                            <option value="Texas">Texas</option>
+                            <option value="Utah">Utah</option>
+                            <option value="Virginia">Virginia</option>
+                            <option value="Vermont">Vermont</option>
+                            <option value="Washington">Washington</option>
+                            <option value="Wisconsin">Wisconsin</option>
+                            <option value="West Virginia">West Virginia</option>
+                            <option value="Wyoming">Wyoming</option>
+                        </select>
+                        <!-- <span class="select2 select2-container select2-container--default" dir="ltr" data-select2-id="1"
+                            style="width: 100%;"><span class="selection"><span
+                                    class="select2-selection select2-selection--single" role="combobox"
+                                    aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false"
+                                    aria-labelledby="select2-state-container"><span class="select2-selection__rendered"
+                                        id="select2-state-container" role="textbox" aria-readonly="true"
+                                        title="Select a State">Select a State</span><span
+                                        class="select2-selection__arrow" role="presentation"><b
+                                            role="presentation"></b></span></span></span><span class="dropdown-wrapper"
+                                aria-hidden="true"></span></span> -->
+                    </div>
+                    <div class="field"><label for="parent_city">City</label><input
+                            data-terms-and-conditions-target="requiredFields" type="text" name="parent[city]"
+                            id="parent_city" data-validate="true"></div>
+                    <div class="field"><label for="parent_zip">Zip</label><input
+                            data-terms-and-conditions-target="requiredFields" type="text" name="parent[zip]"
+                            id="parent_zip" data-validate="true"></div>
+                </div>
+                <div class="clear">
+                    <h2>Contact Info</h2>
+                    <div class="field"><label for="parent_home_phone">Home phone</label><input
+                            data-terms-and-conditions-target="requiredFields" type="text" name="parent[home_phone]"
+                            id="parent_home_phone" data-validate="true"></div>
+                    <div class="field"><label for="parent_cell_phone">Cell phone</label><input
+                            data-terms-and-conditions-target="" type="text" name="parent[cell_phone]"
+                            id="parent_cell_phone" data-validate="true"></div>
+                    <div class="field"><label for="parent_work_phone">Work phone</label><input
+                            data-terms-and-conditions-target="" type="text" name="parent[work_phone]"
+                            id="parent_work_phone" data-validate="true"></div>
+                </div>
+                <div class="clear">
+                    <div class="field">
+                        <script src="https://www.recaptcha.net/recaptcha/api.js" async="" defer=""></script>
+                        <div data-sitekey="6LdyDQoTAAAAANH3OHfLBAlmHRTp7XoMsC9aiJtx" data-callback="setRecaptchaAsValid"
+                            data-expired-callback="setRecaptchaAsInvalid" class="g-recaptcha ">
+                            <div style="width: 304px; height: 78px;">
+                                <div><iframe title="reCAPTCHA" width="304" height="78" role="presentation"
+                                        name="a-rbhk5ijnybwe" frameborder="0" scrolling="no"
+                                        sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation"
+                                        src="https://www.recaptcha.net/recaptcha/api2/anchor?ar=1&amp;k=6LdyDQoTAAAAANH3OHfLBAlmHRTp7XoMsC9aiJtx&amp;co=aHR0cHM6Ly93d3cuc2ltcGx5Z291cm1ldGx1bmNoZXMuY29tOjQ0Mw..&amp;hl=en&amp;v=-ZG7BC9TxCVEbzIO2m429usb&amp;size=normal&amp;cb=aupzs776sutc"></iframe>
+                                </div><textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                                    class="g-recaptcha-response"
+                                    style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;"></textarea>
+                            </div><iframe style="display: none;"></iframe>
+                        </div>
+                        <noscript>
+                            <div>
+                                <div style="width: 302px; height: 422px; position: relative;">
+                                    <div style="width: 302px; height: 422px; position: absolute;">
+                                        <iframe
+                                            src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LdyDQoTAAAAANH3OHfLBAlmHRTp7XoMsC9aiJtx"
+                                            name="ReCAPTCHA"
+                                            style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                                        </iframe>
+                                    </div>
+                                </div>
+                                <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                                    <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                                        class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+                                </div>
+                            </div>
+                        </noscript>
+                        <input value="1" type="hidden" name="parent[terms_and_conditions]"
+                            id="parent_terms_and_conditions">
+                        <div class="field_with_errors hide"
+                            data-terms-and-conditions-target="termsAndConditionsErrorMessage">
+                            <div class="message">You must accept T&amp;C to be able to register</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="clear">
+                    <div class="submit"><button type="submit" alt="Save Changes" class="button_save_changes"
+                            data-action="click->terms-and-conditions#onSubmit" type="button"></button></div>
+                </div>
+            </form>
+            <div class="modal modal-terms-and-conditions fade"
+                data-terms-and-conditions-target="termsAndConditionsModal" role="dialog" tabindex="-1">
+                <div class="modal-dialog modal-lg" id="wrapper" role="document">
+                    <div>
+                        <div class="modal-header" style="padding-bottom: 25px"><button
+                                class="button_green modal-close-tc close" data-dismiss="modal"
+                                type="button"><span>×</span></button></div>
+                        <div id="content_header"><span>Terms and conditions</span></div>
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div id="content">
+                                    <div class="sidebar">
+                                        <div class="inner">
+                                            <h2>
+                                                Contact Information
+                                            </h2>
+                                            <ul>
+                                                <li><span
+                                                        style="color: rgb(72, 91, 11); font-family: MuseoSlab700; font-size: 21px; line-height: 1em;">Simply
+                                                        Gourmet Lunches</span><br></li>
+                                            </ul>
+                                            <ul>
+                                                <li>Corporate Office:</li>
+                                                <li>
+                                                    220 Franklin Road, Unit M<br>Randolph, NJ 07869</li>
+                                                <li>(973) 891-1955<br></li>
+                                                <li>admin@simplygourmetlunches.com</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div id="terms_and_conditions_content" class="span5">
+                                            <h1>
+                                                Terms and Conditions
+                                            </h1>
+                                            <p>By agreeing to the terms and conditions of this site, you agree to
+                                                use the site for its intended purpose of ordering school lunches and/or
+                                                other related catering services as provided by Simply Gourmet. You
+                                                understand that any unauthorized use of the system, or misuse of the
+                                                ordering process may result in a suspension or termination of your
+                                                account.<br>Further, as a parent/caregiver/administrator, you understand
+                                                that Simply Gourmet will make
+                                                every attempt to keep nutritional information and allergy references on
+                                                this site up-to-date, however, you as the parent/ caregiver/
+                                                administrator or anyone
+                                                who uses your account to place orders understands you are responsible
+                                                for ordering meals&nbsp;which meet the individual needs of your child
+                                                (children) with regard to: nutrition, allergies, and food restrictions.
+                                                Simply Gourmet assumes&nbsp;<u>no liability</u> for any orders
+                                                placed.&nbsp; Any orders placed through&nbsp;the Simply Gourmet website
+                                                for food services&nbsp;are at the parents/ caregivers/ administrators
+                                                discretion and such; any and all food service providers will be "held
+                                                harmless" for any food products/ ingredients ordered on this website. It
+                                                is the responsibility of the member ordering to review all necessary
+                                                information prior to placing any orders. &nbsp;<br></p>
+                                            <div>Please note that Simply Gourmet does not offer any refunds.&nbsp;
+                                                Account credits may be issued to the Simply Gourmet account only, based
+                                                on company policy as noted under our bulletins.&nbsp; Once lunches have
+                                                been sent for the day, no credits will be issued for any reason.&nbsp;
+                                                If there are extenuating circumstances, please feel free to contact our
+                                                kitchen at any time. Please refer to our bulletins page for additional
+                                                information on policies and procedures.&nbsp; Simply Gourmet reserves
+                                                the right to make substitutions to menu items as needed based on product
+                                                availability.&nbsp; There is a handling fee applied to all financial
+                                                transactions.&nbsp;&nbsp;</div>
+                                            <p><br></p>
+                                            <div><br></div>
+                                            <p>It is our pleasure to serve you.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer"><button class="button_green"
+                                    data-action="click->terms-and-conditions#acceptTermsAndConditions"
+                                    data-dismiss="modal" type="button"> Accept</button><button class="button_green"
+                                    data-action="click->terms-and-conditions#declineTermsAndConditions"
+                                    data-dismiss="modal" type="button">Decline</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('registerParentForm').addEventListener('submit', async function (event) {
+    event.preventDefault(); // Prevent default form submission behavior
+console.log('Form submitted');
+    // Collect form data
+    const formData = new FormData(this);
+    const payload = Object.fromEntries(formData);
+
+    try {
+        // Send POST request to API
+        const response = await fetch('/api/register', { // Replace '/api/parents' with your actual API endpoint
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        alert('Registration successful!');
+        console.log(result);
+
+        // Redirect or handle success action
+    } catch (error) {
+        console.error('Registration failed:', error);
+        alert('Registration failed. Please try again.');
+    }
+});
+
+</script>
+{% endblock %}
