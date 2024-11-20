@@ -146,6 +146,10 @@
             addToCart() {
                 // Get the selected child
                 const childId = document.querySelector('select').value;
+                if(childId=="0") {
+                    alert('Please select a child');
+                    return;
+                }
 
                 // Initialize the array to hold the selected items
                 let selectedItems = [];

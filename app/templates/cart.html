@@ -30,7 +30,7 @@
     </table>
 
     <div class="flex justify-end mt-4">
-        <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Checkout</button>
+        <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700" id="checkout">Checkout</button>
     </div>
 </div>
 <script>
@@ -39,6 +39,7 @@
         const data = JSON.parse(localStorage.getItem("cart")) || [];
         const tbody = document.querySelector("tbody");
         const totalPriceEl = document.getElementById("total-price");
+        const checkoutButton = document.getElementById("checkout");
     
         let grandTotal = 0;
     
@@ -104,7 +105,34 @@
     
             updateGrandTotal(); // Update the displayed total price
         };
-    
+        const handleCheckout = async () => {
+            try {
+                const response = await fetch('/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cart: data,
+                    }),
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Order placed successfully! Order ID: ${result.order_id}`);
+                    localStorage.removeItem("cart"); // Clear the cart
+                    renderTable(); // Refresh the table
+                } else {
+                    const error = await response.json();
+                    alert(`Error placing order: ${error.error}`);
+                }
+            } catch (error) {
+                console.error("Error during checkout:", error);
+                alert("An unexpected error occurred. Please try again.");
+            }
+        };
+        checkoutButton.addEventListener("click", handleCheckout);
+
         // Attach the removeItem function to the global scope for inline button usage
         window.removeItem = removeItem;
     

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify,flash,redirect
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta, date
-from app.models import db, Cart, CartItem,MenuItem ,Child
+from app.models import db,Child,Order,OrderItem
 
 order = Blueprint('order', __name__)
 
@@ -62,70 +62,89 @@ def add_to_cart():
         "child": child.first_name + " " + child.last_name,
         "cart": filtered_selections
     })
-    # # Create a new cart for the current user and child
-    # new_cart = Cart(user_id=current_user.id, child_id=order_data['child_id'])
-    # db.session.add(new_cart)
-    # try:
-    #     db.session.commit()  # Commit to get the cart's ID
-    # except Exception as e:
-    #     print(f"Error creating cart: {e}")
-    #     db.session.rollback()
-
-    # # Iterate over the filtered selections and add CartItems
-    # for day in filtered_selections:
-    #     # Fetch MenuItems for each category (entree, side, produce, dessert, drink)
-    #     entree = MenuItem.query.filter_by(name=day['entree']['name'], type='entree').first()
-    #     side = MenuItem.query.filter_by(name=day['side']['name'], type='side').first()
-    #     produce = MenuItem.query.filter_by(name=day['produce']['name'], type='produce').first()
-    #     dessert = MenuItem.query.filter_by(name=day['dessert']['name'], type='dessert').first()
-    #     drink = MenuItem.query.filter_by(name=day['drink']['name'], type='drink').first()
-
-    #     # Debugging: Check if MenuItems exist
-    #     if not entree or not side or not produce or not dessert or not drink:
-    #         print(f"Missing MenuItem for day {day['day']}")
-    #         continue  # Skip this day if any MenuItem is missing
-    #     try:
-    #         cart_item = CartItem(
-    #         cart_id=new_cart.id,
-    #         day=day['day'],
-    #         entree=entree,
-    #         side=side,
-    #         produce=produce,
-    #         dessert=dessert,
-    #         drink=drink,
-    #         price=entree.price + side.price + produce.price + dessert.price + drink.price)
-    #         db.session.add(cart_item)
-    #     except Exception as e:
-    #         print(f"Error adding cart item: {e}")
-    #         db.session.rollback()
-    #         return "Failed to add items to cart.", 500
-
-    # # Commit all changes
-    # try:
-    #     db.session.commit()
-    #     return "Items added to cart successfully.", 200
-    # except Exception as e:
-    #     print(f"Error adding cart items: {e}")
-    #     db.session.rollback()  # Roll back if there's an error
-    #     return "Failed to add items to cart.", 500
-
 @order.route('/cart', methods=['GET'])
-@login_required
 def cart():
-    # Get the cart for the current user, ensuring a cart exists
-    cart = CartItem.query.all()
-    for c in cart:
-        print(c.day)
-    
-    return render_template('cart.html', cart=cart)
-        
+    return render_template('cart.html')
 
-@order.route('/cart/remove/', methods=['GET'])
+@order.route('/checkout', methods=['POST'])
 @login_required
-def remove_cart_item():
-    cart_item = Cart.query.all()
-    for c in cart_item:
-        db.session.delete(c)
+def checkout():
+    cart_data = request.json.get("cart", [])
+    parent_id = current_user.id
+
+    if not cart_data or not parent_id:
+        return jsonify({"error": "Invalid data"}), 400
+
+    try:
+        # Create a single order
+        order = Order(
+            parent_id=parent_id,
+            order_date=datetime.now(),
+            total_cost=0.0,  # Placeholder, we'll calculate later
+            status="Pending"
+        )
+        db.session.add(order)
+
+        total_cost = 0  # Initialize total cost for the order
+
+        for item in cart_data:
+            child_name = item['child']
+            child = Child.query.filter_by(
+                first_name=child_name.split()[0],
+                last_name=child_name.split()[1]
+            ).first()
+
+            if not child:
+                return jsonify({"error": f"Child {child_name} not found"}), 404
+
+            for cart_item in item['cart']:
+                # Create OrderItem
+                order_item = OrderItem(
+                    order=order,
+                    child_id=child.id,
+                    day=cart_item['day'],
+                    dessert_name=cart_item['dessert']['name'],
+                    dessert_price=cart_item['dessert']['price'],
+                    drink_name=cart_item['drink']['name'],
+                    drink_price=cart_item['drink']['price'],
+                    entree_name=cart_item['entree']['name'],
+                    entree_price=cart_item['entree']['price'],
+                    produce_name=cart_item['produce']['name'],
+                    produce_price=cart_item['produce']['price'],
+                    side_name=cart_item['side']['name'],
+                    side_price=cart_item['side']['price'],
+                )
+                db.session.add(order_item)
+
+                # Update total cost
+                total_cost += order_item.total_price
+
+        # Update order total cost after calculating
+        order.total_cost = total_cost
         db.session.commit()
-    return redirect('/cart')
+
+        return jsonify({"message": "Order placed successfully", "order_id": order.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@order.route('/delete-order/<int:id>', methods=['DELETE'])
+@login_required
+def delete_order(id):
+    order = Order.query.get(id)
+    db.session.delete(order)
+    db.session.commit()
+    flash('Order deleted successfully')
+    return redirect('/')
+
+@order.route('/order/<int:id>', methods=['GET'])
+@login_required
+def order_detail(id):
+    order = Order.query.get(id)
+    if order is None:
+        flash('Order not found')
+        return redirect('/')
+    order_items = OrderItem.query.filter_by(order_id=order.id).all()
+    child = Child.query.get(order_items[0].child_id)
+    return render_template('order_details.html', order=order, order_items=order_items ,child=child)
 

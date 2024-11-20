@@ -1,6 +1,6 @@
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from flask import Blueprint, jsonify, request, render_template,redirect,flash,url_for
-from app.models import db, Parent,Child
+from app.models import db, Parent,Child,Order
 from flask_login import login_user,current_user,login_required
 
 dashboard = Blueprint('dashboard', __name__)
@@ -10,9 +10,10 @@ dashboard = Blueprint('dashboard', __name__)
 def get_users():
     #list all childern of current user
     children = Child.query.filter_by(parent_id=current_user.id).all()
+    orders = Order.query.filter_by(parent_id=current_user.id).all()
     
     
-    return render_template('dashboard.html', current_user=current_user ,children=children)
+    return render_template('dashboard.html', current_user=current_user ,children=children ,orders=orders)
 
 
 
@@ -38,6 +39,27 @@ def add_child_post():
     db.session.add(child)
     db.session.commit()
     flash('Child added successfully')
+    return redirect('/')
+@dashboard.route('/edit-profile', methods=['GET'])
+@login_required
+def edit_profile():
+    return render_template('edit_profile.html', user=current_user)
+
+@dashboard.route('/edit-profile', methods=['POST'])
+@login_required
+def edit_profile_post():
+    data = request.form
+    current_user.first_name = data['first_name']
+    current_user.last_name = data['last_name']
+    current_user.address = data['address']
+    current_user.state = data['state']
+    current_user.city = data['city']
+    current_user.zip_code = data['zip_code']
+    current_user.home_phone = data['home_phone']
+    current_user.cell_phone = data['cell_phone']
+    current_user.work_phone = data['work_phone']
+    db.session.commit()
+    flash('Profile updated successfully')
     return redirect('/')
 
 @dashboard.route('/delete-child/<int:id>', methods=['DELETE'])

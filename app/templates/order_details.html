@@ -1,0 +1,61 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-3xl font-semibold text-center mb-8">Order Details</h2>
+
+    <!-- Order Summary -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h3 class="text-2xl font-bold mb-4">Order #{{ order.id }}</h3>
+        <p><strong>Order Date:</strong> {{ order.order_date.strftime('%B %d, %Y') }}</p>
+        <p><strong>Total Cost:</strong> ${{ order.total_cost }}</p>
+        <p><strong>Status:</strong> {{ order.status }}</p>
+    </div>
+
+    <!-- Child Information -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h3 class="text-xl font-bold mb-4">Ordered for Child</h3>
+        <p><strong>Name:</strong> {{ child.first_name }} {{ child.last_name }}</p>
+        <p><strong>School:</strong> {{ child.school }}</p>
+        <p><strong>Grade:</strong> {{ child.grade }}</p>
+        <p><strong>State:</strong> {{ child.state }}</p>
+        <p><strong>County:</strong> {{ child.county }}</p>
+        {% if child.allergies %}
+        <p><strong>Allergies:</strong> {{ child.allergies }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Order Items -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-xl font-bold mb-4">Order Items</h3>
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full text-left border-collapse border border-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border border-gray-300 px-4 py-2">Day</th>
+                        <th class="border border-gray-300 px-4 py-2">Entree</th>
+                        <th class="border border-gray-300 px-4 py-2">Drink</th>
+                        <th class="border border-gray-300 px-4 py-2">Dessert</th>
+                        <th class="border border-gray-300 px-4 py-2">Produce</th>
+                        <th class="border border-gray-300 px-4 py-2">Side</th>
+                        <th class="border border-gray-300 px-4 py-2">Item Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="border border-gray-300 px-4 py-2">{{ item.day }}</td>
+                        <td class="border border-gray-300 px-4 py-2">{{ item.entree_name }} (${{ item.entree_price }})</td>
+                        <td class="border border-gray-300 px-4 py-2">{{ item.drink_name }} (${{ item.drink_price }})</td>
+                        <td class="border border-gray-300 px-4 py-2">{{ item.dessert_name }} (${{ item.dessert_price }})</td>
+                        <td class="border border-gray-300 px-4 py-2">{{ item.produce_name }} (${{ item.produce_price }})</td>
+                        <td class="border border-gray-300 px-4 py-2">{{ item.side_name }} (${{ item.side_price }})</td>
+                        <td class="border border-gray-300 px-4 py-2">${{ item.total_price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
