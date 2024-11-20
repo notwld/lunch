@@ -40,3 +40,35 @@ def add_child_post():
     flash('Child added successfully')
     return redirect('/')
 
+@dashboard.route('/delete-child/<int:id>', methods=['DELETE'])
+@login_required
+def delete_child(id):
+    child = Child.query.get(id)
+    db.session.delete(child)
+    db.session.commit()
+    flash('Child deleted successfully')
+    return redirect('/')
+
+@dashboard.route('/edit-child/<int:id>', methods=['GET'])
+@login_required
+def edit_child(id):
+    child = Child.query.get(id)
+    return render_template('edit_child.html', child=child)
+
+@dashboard.route('/edit-child/<int:id>', methods=['POST'])
+@login_required
+def edit_child_post(id):
+    data = request.form
+    child = Child.query.get(id)
+    child.first_name = data['first_name']
+    child.last_name = data['last_name']
+    child.state = data['state']
+    child.county = data['county']
+    child.school = data['school']
+    child.grade = data['grade']
+    child.allergies = data.get('allergies')
+    db.session.commit()
+    flash('Child updated successfully')
+    return redirect('/')
+
+

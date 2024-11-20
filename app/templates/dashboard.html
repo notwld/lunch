@@ -21,11 +21,22 @@
                 {% endif %}
             </div>
             <div class="flex justify-between p-4 bg-gray-100">
-                <a href="#" class="text-blue-500 hover:underline">View Details</a>
-                <a href="#" class="text-red-500 hover:underline">Delete</a>
+                <a href="/edit-child/{{ child.id }}" class="text-blue-500 hover:underline">Edit</a>
+                <a class="text-red-500 hover:underline" onclick="deleteChild({{ child.id }})">Delete</a>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
+<script>
+    const deleteChild = (id) => {
+        if (confirm("Are you sure you want to delete this child?")) {
+            fetch(`/delete-child/${id}`, {
+                method: "DELETE"
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+    };
+</script>
 {% endblock %}

@@ -3,33 +3,114 @@
 {% block content %}
 <div class="container mx-auto py-8">
     <h1 class="text-3xl font-bold text-center mb-6">Cart</h1>
-    <table class="w-full border-collapse border border-gray-300">
-        <thead>
+    <div class="p-3 float-right">
+        <input type="text" name="coupon" id="coupon" class="p-2 border border-gray-300 rounded-lg" placeholder="Coupon Code">
+        <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Apply</button>
+    </div>
+    <table class="w-full border-collapse border border-gray-300 bg-white shadow-lg rounded-lg">
+        <thead class="bg-gray-200">
             <tr>
-                <th class="p-3 text-left">Item</th>
-                <th class="p-3 text-left">Price</th>
-                <th class="p-3 text-left">Quantity</th>
-                <th class="p-3 text-left">Total</th>
+                <th class="p-3 text-left text-gray-700 font-semibold">Day</th>
+                <th class="p-3 text-left text-gray-700 font-semibold">Food</th>
+                <th class="p-3 text-left text-gray-700 font-semibold">Child</th>
+                <th class="p-3 text-left text-gray-700 font-semibold">Total</th>
+                <th class="p-3 text-left text-gray-700 font-semibold">Actions</th>
             </tr>
         </thead>
-        <tbody>
-            {% for item in cart_items %}
-            <tr>
-                <td class="p-3">{{ item.day }} - {{ item.entree }}</td>
-                <td class="p-3">{{ item.price }}</td>
-                <td class="p-3">1</td> <!-- Assuming 1 quantity per item, adjust if necessary -->
-                <td class="p-3">{{ item.price }}</td> <!-- Total per item is its price here -->
-            </tr>
-            {% endfor %}
-            <tr class="font-bold">
-                <td colspan="3" class="p-3 text-right">Total Price</td>
-                <td class="p-3">{{ cart.total_price }}</td>  <!-- Total price from the Cart model -->
-            </tr>
+        <tbody class="divide-y divide-gray-300">
         </tbody>
+        <tfoot class="bg-gray-100">
+            <tr>
+                <td colspan="3" class="p-3 text-right font-bold text-gray-700">Grand Total:</td>
+                <td id="total-price" class="p-3 font-bold text-gray-700"></td>
+                <td></td>
+                
+            </tr>
+        </tfoot>
     </table>
 
     <div class="flex justify-end mt-4">
         <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Checkout</button>
     </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Fetch data from localStorage or set default structure
+        const data = JSON.parse(localStorage.getItem("cart")) || [];
+        const tbody = document.querySelector("tbody");
+        const totalPriceEl = document.getElementById("total-price");
+    
+        let grandTotal = 0;
+    
+        // Function to update the grand total in the UI
+        const updateGrandTotal = () => {
+            totalPriceEl.textContent = `$${grandTotal.toFixed(2)}`;
+        };
+    
+        // Function to remove an item from the cart
+        const removeItem = (childIndex, cartIndex) => {
+            data[childIndex].cart.splice(cartIndex, 1); // Remove the selected item
+            if (data[childIndex].cart.length === 0) {
+                data.splice(childIndex, 1); // Remove the child if their cart is empty
+            }
+            localStorage.setItem("cart", JSON.stringify(data)); // Update localStorage
+            renderTable(); // Re-render the table
+        };
+    
+        // Function to render the table
+        const renderTable = () => {
+            tbody.innerHTML = ""; // Clear existing table rows
+            grandTotal = 0; // Reset grand total
+    
+            // Loop through each child
+            data.forEach((childData, childIndex) => {
+                // Loop through each item in the child's cart
+                childData.cart.forEach((item, cartIndex) => {
+                    const itemTotal =
+                        (item.dessert.price || 0) +
+                        (item.drink.price || 0) +
+                        (item.entree.price || 0) +
+                        (item.produce.price || 0) +
+                        (item.side.price || 0);
+    
+                    grandTotal += itemTotal; // Add to the grand total
+    
+                    // Create a new row for the table
+                    const tr = document.createElement("tr");
+                    tr.classList.add("hover:bg-gray-100");
+                    tr.innerHTML = `
+                        <td class="p-3 text-gray-700">${item.day}</td>
+                        <td class="p-3 text-gray-700">
+                            Dessert: ${item.dessert.name} ($${item.dessert.price})<br>
+                            Drink: ${item.drink.name} ($${item.drink.price})<br>
+                            Entrée: ${item.entree.name} ($${item.entree.price})<br>
+                            Produce: ${item.produce.name} ($${item.produce.price})<br>
+                            Side: ${item.side.name} ($${item.side.price})
+                        </td>
+                        <td class="p-3 text-gray-700">${childData.child}</td>
+                        <td class="p-3 text-gray-700">$${itemTotal.toFixed(2)}</td>
+                        <td class="p-3">
+                            <button 
+                                class="bg-red-500 text-white py-1 px-2 rounded-lg hover:bg-red-700"
+                                onclick="removeItem(${childIndex}, ${cartIndex})"
+                            >
+                                Remove
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr); // Append the row to the table body
+                });
+            });
+    
+            updateGrandTotal(); // Update the displayed total price
+        };
+    
+        // Attach the removeItem function to the global scope for inline button usage
+        window.removeItem = removeItem;
+    
+        // Initial render of the table
+        renderTable();
+    });
+</script>
+
 {% endblock %}

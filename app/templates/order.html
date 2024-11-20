@@ -167,6 +167,8 @@
                     // Add the day's items to the selectedItems array
                     selectedItems.push(items);
                 });
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                
 
                 fetch('/add-to-cart', {
                     method: 'POST',
@@ -177,14 +179,12 @@
                         child_id: childId,
                         items: selectedItems,
                     }),
-                }).then(response => {
-                    if (response.ok) {
-                        // alert('Items added to cart successfully');
-                        // window.location.href = '/cart';
-                    } else {
-                        alert('Failed to add items to cart');
-                    }
-                });
+                }).then(response => response.json())
+                    .then(data => {
+                        cart.push(data);
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                          window.location.href = '/cart';
+                    });
             },
 
             // Helper function to get the name and price of the selected item
