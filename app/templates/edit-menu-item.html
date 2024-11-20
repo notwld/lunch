@@ -2,8 +2,8 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md">
-    <h2 class="text-xl font-semibold mb-4 text-gray-700">Add Menu Item</h2>
-    <form action="/add-menu" method="POST">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Edit Menu Item</h2>
+    <form action="/edit-menu/{{ menu.id }}" method="POST">
       <!-- Name -->
       <div class="mb-4">
         <label for="name" class="block text-sm font-medium text-gray-600">Name</label>
@@ -14,6 +14,7 @@
           class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           placeholder="Enter item name"
           required
+            value="{{ menu.name }}"
         />
       </div>
   
@@ -28,6 +29,8 @@
           name="price"
           class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           placeholder="Enter item price"
+            required
+                value="{{ menu.price }}"
           required
         />
       </div>
@@ -40,8 +43,9 @@
           name="type"
           class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           required
+        
         >
-          <option value="" disabled selected>Select a type</option>
+          <option value="{{ menu.type }}" disabled selected>Select a type</option>
           <option value="entree">Entree</option>
           <option value="side">Side</option>
           <option value="dessert">Dessert</option>
@@ -72,6 +76,7 @@
           name="img_url"
           class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           placeholder="Enter image URL (optional)"
+          value="{{ menu.img_url }}"
         />
       </div>
   
@@ -93,7 +98,7 @@
           type="submit"
           class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Save Menu Item
+          Save Changes
         </button>
       </div>
     </form>

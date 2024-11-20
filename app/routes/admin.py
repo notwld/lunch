@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify,flash,redirect
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta, date
-from app.models import db,Child,Order,OrderItem,Parent,School
+from app.models import db,Child,Order,OrderItem,Parent,School,MenuItem
 
 admin = Blueprint('admin', __name__)
 
@@ -157,9 +157,61 @@ def delete_school(id):
 @admin.route('/view-menus', methods=['GET'])
 @login_required
 def view_menus():
-    return render_template('menu.html')
+    menus = MenuItem.query.all()
+    return render_template('menu.html' ,menus=menus)
 
 @admin.route('/add-menu', methods=['GET'])
 @login_required
 def add_menu():
     return render_template('add-menu-item.html')
+
+@admin.route('/add-menu', methods=['POST'])
+@login_required
+def add_menu_post():
+    data = request.form
+    if not data['name'] or not data['price'] or not data['type'] or not data['cautions'] or not data['description']:
+        flash('All fields are required')
+        return redirect('/add-menu')
+    menu_item = MenuItem(
+        name=data['name'],
+        price=data['price'],
+        type=data['type'],
+        cautions=data['cautions'],
+        description=data['description'],
+        img_url=data['img_url'] or ""
+    )
+    db.session.add(menu_item)
+    db.session.commit()
+    flash('Menu item added successfully')
+    return redirect('/view-menus')
+
+
+@admin.route('/edit-menu/<int:id>', methods=['GET'])
+@login_required
+def edit_menu(id):
+    menu = MenuItem.query.get(id)
+    return render_template('edit-menu-item.html', menu=menu)
+
+@admin.route('/edit-menu/<int:id>', methods=['POST'])
+@login_required
+def edit_menu_post(id):
+    data = request.form
+    menu = MenuItem.query.get(id)
+    menu.name = data['name']
+    menu.price = data['price']
+    menu.type = data['type']
+    menu.cautions = data['cautions']
+    menu.description = data['description']
+    menu.img_url = data['img_url']
+    db.session.commit()
+    flash('Menu item updated successfully')
+    return redirect('/view-menus')
+
+@admin.route('/delete-menu/<int:id>', methods=['DELETE'])
+@login_required
+def delete_menu(id):
+    menu = MenuItem.query.get(id)
+    db.session.delete(menu)
+    db.session.commit()
+    flash('Menu item deleted successfully')
+    return redirect('/view-menus')
