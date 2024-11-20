@@ -1,0 +1,51 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-3xl font-semibold text-center mb-8">Edit School/Daycare</h2>
+    <div class="bg-white p-6 rounded-lg shadow-md max-w-xl mx-auto">
+        <form method="POST" action="/edit-school/{{ school.id }}">
+            <!-- School Name -->
+            <div class="mb-4">
+                <label for="school_name" class="block text-gray-700 font-medium mb-2" >School/Daycare Name</label>
+                <input type="text" id="school_name" name="school_name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter the school or daycare name" value="{{ school.name }}" required>
+            </div>
+
+            <!-- Address -->
+            <div class="mb-4">
+                <label for="address" class="block text-gray-700 font-medium mb-2">Address</label>
+                <textarea id="address" name="address" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="3" placeholder="Enter the full address" required value="{{ school.address }}"></textarea>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="mb-4">
+                <label for="phone_number" class="block text-gray-700 font-medium mb-2">Phone Number</label>
+                <input type="tel" id="phone_number" name="phone_number" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter phone number" required value="{{ school.phone_number }}">
+            </div>
+
+            <!-- Point of Contact -->
+            <div class="mb-4">
+                <label for="contact_name" class="block text-gray-700 font-medium mb-2">Point of Contact Name</label>
+                <input type="text" id="contact_name" name="contact_name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter contact person's name" required value="{{ school.contact_name }}">
+            </div>
+            <div class="mb-4">
+                <label for="contact_email" class="block text-gray-700 font-medium mb-2">Point of Contact Email</label>
+                <input type="email" id="contact_email" name="contact_email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter contact person's email" required value="{{ school.contact_email }}">
+            </div>
+
+            <!-- Special Instructions -->
+            <div class="mb-4">
+                <label for="special_instructions" class="block text-gray-700 font-medium mb-2">Special Instructions</label>
+                <textarea id="special_instructions" name="special_instructions" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="3" placeholder="Any special instructions" value="{{ school.special_instructions }}"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 focus:ring-4 focus:ring-blue-300">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

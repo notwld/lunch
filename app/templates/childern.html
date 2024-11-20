@@ -1,0 +1,52 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-semibold text-center mb-8">
+        {{ parent.first_name }} {{ parent.last_name }}'s Children
+    </h1>
+    <table class="table-auto w-full border border-gray-300">
+        <thead>
+            <tr class="bg-gray-100 text-left">
+                <th class="px-4 py-2 border">First Name</th>
+                <th class="px-4 py-2 border">Last Name</th>
+                <th class="px-4 py-2 border">School</th>
+                <th class="px-4 py-2 border">Grade</th>
+                <th class="px-4 py-2 border">State</th>
+                <th class="px-4 py-2 border">County</th>
+                <th class="px-4 py-2 border">Allergies</th>
+                <th class="px-4 py-2 border">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for child in children %}
+            <tr>
+                <td class="px-4 py-2 border">{{ child.first_name }}</td>
+                <td class="px-4 py-2 border">{{ child.last_name }}</td>
+                <td class="px-4 py-2 border">{{ child.school }}</td>
+                <td class="px-4 py-2 border">{{ child.grade }}</td>
+                <td class="px-4 py-2 border">{{ child.state }}</td>
+                <td class="px-4 py-2 border">{{ child.county }}</td>
+                <td class="px-4 py-2 border">{{ child.allergies }}</td>
+                <td class="px-4 py-2 border">
+                    <a href="/edit-child/{{ child.id }}" class="text-blue-500 hover:underline">Edit</a> |
+                    <a href="/delete-child/{{ child.id }}" class="text-red-500 hover:underline" onclick="deleteChild({{ child.id }})">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+<script>
+     const deleteChild = (id) => {
+        if (confirm("Are you sure you want to delete this child?")) {
+            fetch(`/delete-child/${id}`, {
+                method: "DELETE"
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+    };
+</script>
+{% endblock %}

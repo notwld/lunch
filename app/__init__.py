@@ -5,6 +5,7 @@ from flask_login import LoginManager
 from app.routes.dashboard import dashboard
 from app.routes.auth import auth
 from app.routes.order import order
+from app.routes.admin import admin
 
 def create_app():
     app = Flask(__name__,
@@ -29,5 +30,6 @@ def create_app():
     app.register_blueprint(dashboard, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(order, url_prefix='/')
+    app.register_blueprint(admin, url_prefix='/')
 
     return app

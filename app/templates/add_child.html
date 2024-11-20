@@ -23,7 +23,12 @@
             </div>
             <div class="mb-4">
                 <label for="school" class="block text-sm font-medium text-gray-700">School</label>
-                <input type="text" name="school" id="school" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="School" required>
+                <select name="school_id" id="school" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" required>
+                    <option value="" disabled selected>Select School</option>
+                    {% for school in schools %}
+                    <option value="{{ school.id }}">{{ school.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="mb-4">
                 <label for="grade" class="block text-sm font-medium text-gray-700">Grade</label>

@@ -1,0 +1,56 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-semibold text-center mb-8">
+        All Orders
+    </h1>
+    <table class="table-auto w-full border border-gray-300">
+        <thead>
+            <tr>
+                <th class="border border-gray-300 px-4 py-2">Order ID</th>
+                <th class="border border-gray-300 px-4 py-2">Order On</th>
+                <th class="border border-gray-300 px-4 py-2">Child</th>
+                <th class="border border-gray-300 px-4 py-2">Order for Day</th>
+                <th class="border border-gray-300 px-4 py-2">Total Cost</th>
+                <th class="border border-gray-300 px-4 py-2">Status</th>
+                <th class="border border-gray-300 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td class="border border-gray-300 px-4 py-2">{{ order.id }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ order.order_date.strftime('%B %d, %Y') }}</td>
+                <td class="border border-gray-300 px-4 py-2">
+                    {% for item in order.order_items %}
+                    <div>{{ item.child.first_name }} {{ item.child.last_name }}</div>
+                    {% endfor %}
+                </td>
+                <td class="border border-gray-300 px-4 py-2">
+                    {% for item in order.order_items %}
+                    <div>{{ item.day }}</div>
+                    {% endfor %}
+                </td>
+                <td class="border border-gray-300 px-4 py-2">${{ order.total_cost }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ order.status }}</td>
+                <td class="border border-gray-300 px-4 py-2 text-center space-x-4">
+                    <a href="/order/{{ order.id }}" class="text-blue-500 hover:underline">View</a>
+                    <a class="text-red-500 hover:underline" onclick="deleteOrder({{ order.id }})">Cancel Order</a>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+    const deleteOrder = (id) => {
+        if (confirm("Are you sure you want to delete this order?")) {
+            fetch(`/delete-order/${id}`, {
+                method: "DELETE"
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+    };
+</script>
+{% endblock %}

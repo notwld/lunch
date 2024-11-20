@@ -1,0 +1,102 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Add Menu Item</h2>
+    <form action="/menu_item" method="POST">
+      <!-- Name -->
+      <div class="mb-4">
+        <label for="name" class="block text-sm font-medium text-gray-600">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter item name"
+          required
+        />
+      </div>
+  
+      <!-- Price -->
+      <div class="mb-4">
+        <label for="price" class="block text-sm font-medium text-gray-600">Price</label>
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          id="price"
+          name="price"
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter item price"
+          required
+        />
+      </div>
+  
+      <!-- Type -->
+      <div class="mb-4">
+        <label for="type" class="block text-sm font-medium text-gray-600">Type</label>
+        <select
+          id="type"
+          name="type"
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          required
+        >
+          <option value="" disabled selected>Select a type</option>
+          <option value="entree">Entree</option>
+          <option value="side">Side</option>
+          <option value="dessert">Dessert</option>
+          <option value="drink">Drink</option>
+          <option value="produce">Produce</option>
+
+        </select>
+      </div>
+  
+      <!-- Description -->
+      <div class="mb-4">
+        <label for="description" class="block text-sm font-medium text-gray-600">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="3"
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter a brief description (optional)"
+        ></textarea>
+      </div>
+  
+      <!-- Image URL -->
+      <div class="mb-4">
+        <label for="img_url" class="block text-sm font-medium text-gray-600">Image URL</label>
+        <input
+          type="url"
+          id="img_url"
+          name="img_url"
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter image URL (optional)"
+        />
+      </div>
+  
+      <!-- Cautions -->
+      <div class="mb-4">
+        <label for="cautions" class="block text-sm font-medium text-gray-600">Cautions</label>
+        <textarea
+          id="cautions"
+          name="cautions"
+          rows="3"
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter any cautions or warnings (optional)"
+        ></textarea>
+      </div>
+  
+      <!-- Submit Button -->
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Save Menu Item
+        </button>
+      </div>
+    </form>
+  </div>
+  
+{% endblock %}

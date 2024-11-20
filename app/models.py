@@ -53,9 +53,11 @@ class Child(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     state = db.Column(db.String(50), nullable=False)
     county = db.Column(db.String(50), nullable=False)
-    school = db.Column(db.String(100), nullable=False)
     grade = db.Column(db.String(20), nullable=False)
     allergies = db.Column(db.Text, nullable=True)
+
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=False)
+    school = db.relationship('School', back_populates='children')
     
     # Relationship
     parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=False)
@@ -63,7 +65,26 @@ class Child(db.Model):
     
     def __repr__(self):
         return f"<Child {self.first_name} {self.last_name}>"
-    
+
+class School(db.Model):
+    __tablename__ = 'schools'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # School Info
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    address = db.Column(db.String(255), nullable=False)
+    phone_number = db.Column(db.String(15), nullable=False)
+    contact_name = db.Column(db.String(100), nullable=False)
+    contact_email = db.Column(db.String(120), nullable=False)
+    special_instructions = db.Column(db.Text, nullable=True)
+    total_students = db.Column(db.Integer, nullable=True)
+    # Relationships
+    children = db.relationship('Child', back_populates='school', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"<School {self.name}>"
+
 
 class Order(db.Model):
     __tablename__ = 'orders'
@@ -118,3 +139,16 @@ class OrderItem(db.Model):
     def __repr__(self):
         return f"<OrderItem Day: {self.day}, Total: ${self.total_price:.2f}>"
 
+class MenuItem (db.Model):
+    __tablename__ = 'menu_items'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    type = db.Column(db.String(20), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    img_url = db.Column(db.String(255), nullable=True)
+    cautions = db.Column(db.Text, nullable=True)
+
+    def __repr__(self):
+        return f"<MenuItem {self.name} - ${self.price:.2f}>"    

@@ -7,34 +7,47 @@
         <form action="/edit-child/{{ child.id }}" method="POST">
             <div class="mb-4">
                 <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
-                <input type="text" name="first_name" id="first_name" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" value="{{ child.first_name }}" required>
+                <input type="text" name="first_name" id="first_name"
+                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg" value="{{ child.first_name }}" required>
             </div>
             <div class="mb-4">
                 <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
-                <input type="text" name="last_name" id="last_name" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" value="{{ child.last_name }}" required>
+                <input type="text" name="last_name" id="last_name"
+                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg" value="{{ child.last_name }}" required>
             </div>
             <div class="mb-4">
                 <label for="state" class="block text-sm font-medium text-gray-700">State</label>
-                <input type="text" name="state" id="state" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" value="{{ child.state }}" required>
+                <input type="text" name="state" id="state" class="w-full mt-1 p-2 border border-gray-300 rounded-lg"
+                    value="{{ child.state }}" required>
             </div>
             <div class="mb-4">
                 <label for="county" class="block text-sm font-medium text-gray-700">County</label>
-                <input type="text" name="county" id="county" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" value="{{ child.county }}" required>
+                <input type="text" name="county" id="county" class="w-full mt-1 p-2 border border-gray-300 rounded-lg"
+                    value="{{ child.county }}" required>
             </div>
             <div class="mb-4">
                 <label for="school" class="block text-sm font-medium text-gray-700">School</label>
-                <input type="text" name="school" id="school" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" value="{{ child.school }}" required>
+                <select name="school_id" id="school" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" required ">
+                    <option value=" {{ child.school.id }}" disabled selected>{{child.school.name}}</option>
+                    {% for school in schools %}
+                    <option value="{{ school.id }}">{{ school.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="mb-4">
                 <label for="grade" class="block text-sm font-medium text-gray-700">Grade</label>
-                <input type="text" name="grade" id="grade" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" value="{{ child.grade }}" required>
+                <input type="text" name="grade" id="grade" class="w-full mt-1 p-2 border border-gray-300 rounded-lg"
+                    value="{{ child.grade }}" required>
             </div>
             <div class="mb-4">
                 <label for="allergies" class="block text-sm font-medium text-gray-700">Allergies</label>
-                <textarea name="allergies" id="allergies" rows="3" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="Any known allergies (optional)">{{ child.allergies }}</textarea>
+                <textarea name="allergies" id="allergies" rows="3"
+                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg"
+                    placeholder="Any known allergies (optional)">{{ child.allergies }}</textarea>
             </div>
             <div class="flex justify-center">
-                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Save Changes</button>
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Save
+                    Changes</button>
             </div>
         </form>
     </div>
