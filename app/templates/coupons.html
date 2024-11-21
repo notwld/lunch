@@ -1,0 +1,45 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="flex justify-between items-center w-full">
+        <h2 class="text-3xl font-semibold">Coupons</h2>
+        <a href="/add-coupon" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">Add Coupon</a>
+
+    </div>
+    {% if coupons %}
+        {% for coupon in coupons %}
+            <div class="bg-white p-4 mt-4 rounded-lg shadow-lg">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xl font-semibold">{{ coupon.code }}</h3>
+                        <p class="text-gray-500">{{ coupon.discount }}% off</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Expires on {{ coupon.expiration_date.strftime('%b %d, %Y') }}</p>
+                        <p class="text-gray-500">{{ coupon.status }}</p>
+                    </div>
+                    <div>
+                        <a href="/edit-coupon/{{ coupon.id }}" class="text-blue-500 hover:underline">Edit</a> |
+                        <a class="text-red-500 hover:underline" onclick="deleteCoupon({{ coupon.id }})">Delete</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-center mt-4">No coupons available</p>
+    {% endif %}
+
+</div>
+<script>
+    const deleteCoupon = (id) => {
+        if (confirm("Are you sure you want to delete this coupon?")) {
+            fetch(`/delete-coupon/${id}`, {
+                method: "DELETE"
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+    };
+</script>
+{% endblock %}

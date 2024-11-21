@@ -31,7 +31,7 @@
                     x-model="dailySelections['day{{ loop.index0 }}'].entree">
                     <option value="0">Select an Entree</option>
                     {% for item in menu.entrees %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}  - {{ item.cautions }}</option>
                     {% endfor %}
                 </select>
 
@@ -41,7 +41,7 @@
                     x-model="dailySelections['day{{ loop.index0 }}'].side">
                     <option value="0">Select a Side</option>
                     {% for item in menu.sides %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}  - {{ item.cautions }}</option>
                     {% endfor %}
                 </select>
 
@@ -51,7 +51,7 @@
                     x-model="dailySelections['day{{ loop.index0 }}'].produce">
                     <option value="0">Select Produce</option>
                     {% for item in menu.produce %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}  - {{ item.cautions }}</option>
                     {% endfor %}
                 </select>
 
@@ -61,7 +61,7 @@
                     x-model="dailySelections['day{{ loop.index0 }}'].dessert">
                     <option value="0">Select a Dessert</option>
                     {% for item in menu.desserts %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}  - {{ item.cautions }}</option>
                     {% endfor %}
                 </select>
 
@@ -71,7 +71,7 @@
                     x-model="dailySelections['day{{ loop.index0 }}'].drink">
                     <option value="0">Select a Drink</option>
                     {% for item in menu.drinks %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
                     {% endfor %}
                 </select>
 
@@ -195,7 +195,7 @@
             getItemDetails(selectedPrice, menuCategory) {
                 if (selectedPrice === 0) return { name: 'None', price: 0 }; // If nothing is selected
                 const item = menuCategory.find(i => i.price == selectedPrice);
-                return item ? { name: item.name, price: item.price } : { name: 'Unknown', price: 0 };
+                return item ? { name: item.name, price: item.price,cautions:item.cautions } : { name: 'Unknown', price: 0 };
             }
         }));
     });

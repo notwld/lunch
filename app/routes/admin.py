@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify,flash,redirect
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta, date
-from app.models import db,Child,Order,OrderItem,Parent,School,MenuItem
+from app.models import db,Child,Order,OrderItem,Parent,School,MenuItem,Coupons
 
 admin = Blueprint('admin', __name__)
 
@@ -215,3 +215,72 @@ def delete_menu(id):
     db.session.commit()
     flash('Menu item deleted successfully')
     return redirect('/view-menus')
+
+@admin.route('/coupons', methods=['GET'])
+@login_required
+def coupons():
+    coupons = Coupons.query.all()
+    return render_template('coupons.html', coupons=coupons)
+
+@admin.route('/add-coupon', methods=['GET'])
+@login_required
+def add_coupon_page():
+    return render_template('add-coupon.html')
+
+@admin.route('/save_coupon', methods=['POST'])
+@login_required
+def add_coupon():
+    data = request.form
+    coupon = Coupons(
+        code=data['code'],
+        discount=data['discount'],
+expiration_date=datetime.strptime(data['expiration_date'], '%Y-%m-%dT%H:%M'),
+        status=data.get('status', 'Active')    )
+    db.session.add(coupon)
+    db.session.commit()
+    flash('Coupon added successfully')
+    return redirect('/coupons')
+
+@admin.route('/delete-coupon/<int:id>', methods=['DELETE'])
+@login_required
+def delete_coupon(id):
+    coupon = Coupons.query.get(id)
+    db.session.delete(coupon)
+    db.session.commit()
+    flash('Coupon deleted successfully')
+    return redirect('/coupons')
+
+@admin.route('/edit-coupon/<int:id>', methods=['GET'])
+@login_required
+def edit_coupon(id):
+    coupon = Coupons.query.get(id)
+    return render_template('edit-coupon.html', coupon=coupon)
+
+@admin.route('/edit-coupon/<int:id>', methods=['POST'])
+@login_required
+def edit_coupon_post(id):
+    data = request.form
+    coupon = Coupons.query.get(id)
+    coupon.code = data['code']
+    coupon.discount = data['discount']
+    coupon.expiration_date = datetime.strptime(data['expiration_date'], '%Y-%m-%dT%H:%M')
+    coupon.status = data.get('status', 'Active')
+
+    db.session.commit()
+    flash('Coupon updated successfully')
+    return redirect('/coupons')
+
+# validate coupon
+@admin.route('/validate-coupon', methods=['POST'])
+@login_required
+def validate_coupon():
+    data = request.json
+    coupon = Coupons.query.filter_by(code=data['code']).first()
+    if not coupon:
+        return jsonify({"error": "Coupon not found"}), 404
+    now_date = datetime.strptime(str(date.today()), '%Y-%m-%d')
+    if coupon.expiration_date < now_date:
+        return jsonify({"error": "Coupon has expired"}), 400
+    return jsonify({"discount": coupon.discount})
+
+

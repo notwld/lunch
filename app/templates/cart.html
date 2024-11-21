@@ -4,9 +4,14 @@
 <div class="container mx-auto py-8">
     <h1 class="text-3xl font-bold text-center mb-6">Cart</h1>
     <div class="p-3 float-right">
-        <input type="text" name="coupon" id="coupon" class="p-2 border border-gray-300 rounded-lg" placeholder="Coupon Code">
-        <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Apply</button>
+        <input type="text" name="code" id="coupon" class="p-2 border border-gray-300 rounded-lg"
+            placeholder="Coupon Code" />
+        <button id="apply-coupon" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+            Apply
+        </button>
+        <span id="coupon-message" class="text-sm text-red-500 ml-2"></span>
     </div>
+
     <table class="w-full border-collapse border border-gray-300 bg-white shadow-lg rounded-lg">
         <thead class="bg-gray-200">
             <tr>
@@ -24,7 +29,7 @@
                 <td colspan="3" class="p-3 text-right font-bold text-gray-700">Grand Total:</td>
                 <td id="total-price" class="p-3 font-bold text-gray-700"></td>
                 <td></td>
-                
+
             </tr>
         </tfoot>
     </table>
@@ -35,19 +40,60 @@
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        // Fetch data from localStorage or set default structure
+        const couponInput = document.getElementById("coupon");
+        const applyCouponButton = document.getElementById("apply-coupon");
+        const couponMessage = document.getElementById("coupon-message");
+
+        let grandTotal = 0; // Default grand total
+        let appliedDiscount = 0; // To track applied discount        
         const data = JSON.parse(localStorage.getItem("cart")) || [];
         const tbody = document.querySelector("tbody");
         const totalPriceEl = document.getElementById("total-price");
         const checkoutButton = document.getElementById("checkout");
-    
-        let grandTotal = 0;
-    
+
+
         // Function to update the grand total in the UI
         const updateGrandTotal = () => {
-            totalPriceEl.textContent = `$${grandTotal.toFixed(2)}`;
+            const discountedTotal = grandTotal * ((100 - appliedDiscount) / 100);
+            totalPriceEl.textContent = `$${discountedTotal.toFixed(2)}`;
         };
-    
+
+        const applyCoupon = async () => {
+            const couponCode = couponInput.value.trim();
+            if (!couponCode) {
+                couponMessage.textContent = "Please enter a coupon code.";
+                return;
+            }
+
+            try {
+                const response = await fetch("/validate-coupon", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ code: couponCode }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    appliedDiscount = data.discount;
+                    couponMessage.textContent = `Coupon applied! ${appliedDiscount}% discount.`;
+                    couponMessage.classList.remove("text-red-500");
+                    couponMessage.classList.add("text-green-500");
+                    updateGrandTotal();
+                } else {
+                    const error = await response.json();
+                    couponMessage.textContent = error.error;
+                    couponMessage.classList.add("text-red-500");
+                    appliedDiscount = 0; // Reset discount
+                    updateGrandTotal();
+                }
+            } catch (error) {
+                couponMessage.textContent = "Error applying coupon. Please try again.";
+                couponMessage.classList.add("text-red-500");
+            }
+        };
+        applyCouponButton.addEventListener("click", applyCoupon);
         // Function to remove an item from the cart
         const removeItem = (childIndex, cartIndex) => {
             data[childIndex].cart.splice(cartIndex, 1); // Remove the selected item
@@ -57,12 +103,12 @@
             localStorage.setItem("cart", JSON.stringify(data)); // Update localStorage
             renderTable(); // Re-render the table
         };
-    
+
         // Function to render the table
         const renderTable = () => {
             tbody.innerHTML = ""; // Clear existing table rows
             grandTotal = 0; // Reset grand total
-    
+
             // Loop through each child
             data.forEach((childData, childIndex) => {
                 // Loop through each item in the child's cart
@@ -73,9 +119,9 @@
                         (item.entree.price || 0) +
                         (item.produce.price || 0) +
                         (item.side.price || 0);
-    
+
                     grandTotal += itemTotal; // Add to the grand total
-    
+
                     // Create a new row for the table
                     const tr = document.createElement("tr");
                     tr.classList.add("hover:bg-gray-100");
@@ -102,7 +148,7 @@
                     tbody.appendChild(tr); // Append the row to the table body
                 });
             });
-    
+
             updateGrandTotal(); // Update the displayed total price
         };
         const handleCheckout = async () => {
@@ -114,6 +160,8 @@
                     },
                     body: JSON.stringify({
                         cart: data,
+                        discount: appliedDiscount,
+                        coupon_code: couponInput.value.trim(),
                     }),
                 });
 
@@ -122,6 +170,7 @@
                     alert(`Order placed successfully! Order ID: ${result.order_id}`);
                     localStorage.removeItem("cart"); // Clear the cart
                     renderTable(); // Refresh the table
+                    window.location.href = '/'; // Redirect to the home page
                 } else {
                     const error = await response.json();
                     alert(`Error placing order: ${error.error}`);
@@ -135,7 +184,7 @@
 
         // Attach the removeItem function to the global scope for inline button usage
         window.removeItem = removeItem;
-    
+
         // Initial render of the table
         renderTable();
     });

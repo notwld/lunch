@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify,flash,redirect
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta, date
-from app.models import db,Child,Order,OrderItem
+from app.models import db,Child,Order,OrderItem,MenuItem,Coupons
 
 order = Blueprint('order', __name__)
 
@@ -25,14 +25,19 @@ def order_page():
 
     weekdays = get_weekdays_of_month(current_year, current_month)
 
-    # Sample menu (you can fetch actual menu from the database)
+    menu_items = MenuItem.query.all()
     menu = {
-        "entrees": [{"name": "Buttered Noodles V", "price": 3.5}, {"name": "Pasta", "price": 4.0}],
-        "sides": [{"name": "All Beef Meatballs", "price": 2.0}, {"name": "Grilled Veggies", "price": 2.5}],
-        "produce": [{"name": "Locally Grown Apple Slices", "price": 1.0}, {"name": "Carrot Sticks", "price": 1.2}],
-        "desserts": [{"name": "Sugar Cookie", "price": 1.5}, {"name": "Brownie", "price": 2.0}],
-        "drinks": [{"name": "No Drink", "price": 0.0}, {"name": "Orange Juice", "price": 1.5}],
+        "entrees": [],
+        "sides": [],
+        "produce": [],
+        "desserts": [],
+        "drinks": []
     }
+
+    # Group menu items by their type
+    for item in menu_items:
+        if item.type in menu:
+            menu[item.type].append({"name": item.name, "price": item.price, "description": item.description,"cautions": item.cautions})
 
     # Determine locked days
     locked_days = {day: day < today.date() for day in weekdays}
@@ -43,8 +48,18 @@ def order_page():
         menu=menu,
         locked_days=locked_days,
         current_date=today.date(),
-        children=childern
+        children=[
+    {"id": child.id, "first_name": child.first_name, "last_name": child.last_name, "allergies": child.allergies or ""}
+    for child in childern
+]
+
     )
+@order.route('/get-child-allergies/<int:child_id>', methods=['GET'])
+@login_required
+def get_child_allergies(child_id):
+    child = Child.query.get_or_404(child_id)
+    return jsonify({"allergies": child.allergies})
+
 @order.route('/add-to-cart', methods=['POST'])
 def add_to_cart():
     order_data = request.json  # Assuming you send JSON from the frontend
@@ -70,6 +85,8 @@ def cart():
 @login_required
 def checkout():
     cart_data = request.json.get("cart", [])
+    discount = request.json.get("discount", None)
+    coupon_code = request.json.get("coupon_code", None)
     parent_id = current_user.id
 
     if not cart_data or not parent_id:
@@ -120,7 +137,18 @@ def checkout():
                 total_cost += order_item.total_price
 
         # Update order total cost after calculating
-        order.total_cost = total_cost
+        order.total_cost = float(total_cost)
+        if discount and coupon_code:
+            # discount is in percentage
+            order.total_cost *= (1 - discount / 100)
+            order.total_cost = round(order.total_cost, 2)
+            coupon = Coupons.query.filter_by(code=coupon_code).first()
+            coupon.status = "Used"
+            db.session.add(coupon)
+
+
+
+
         db.session.commit()
 
         return jsonify({"message": "Order placed successfully", "order_id": order.id}), 201
@@ -132,9 +160,9 @@ def checkout():
 @login_required
 def delete_order(id):
     order = Order.query.get(id)
-    db.session.delete(order)
+    order.status = "Cancelled"
     db.session.commit()
-    flash('Order deleted successfully')
+    flash('Order Cancelled successfully')
     return redirect('/')
 
 @order.route('/order/<int:id>', methods=['GET'])

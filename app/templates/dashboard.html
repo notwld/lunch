@@ -3,14 +3,15 @@
 {% block content %}
 <div class="container mx-auto p-6">
     <h2 class="text-3xl font-semibold text-center mb-8">Your Childern</h2>
-    
+
     <!-- Grid of Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for child in children %}
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="relative pb-2/3">
                 <!-- You can add a placeholder image or use a dynamic one if available -->
-                <img src="https://via.placeholder.com/300" alt="Child Image" class="absolute inset-0 w-full h-full object-cover">
+                <img src="https://via.placeholder.com/300" alt="Child Image"
+                    class="absolute inset-0 w-full h-full object-cover">
             </div>
             <div class="p-4">
                 <h3 class="text-xl font-bold">{{ child.first_name }} {{ child.last_name }}</h3>
@@ -64,14 +65,17 @@
                     <td class="border border-gray-300 px-4 py-2">{{ order.status }}</td>
                     <td class="border border-gray-300 px-4 py-2 text-center space-x-4">
                         <a href="/order/{{ order.id }}" class="text-blue-500 hover:underline">View</a>
+                        {% if order.status not in ['Cancelled', 'Paid', 'Delivered'] %}
                         <a href="/order/{{ order.id }}" class="text-green-500 hover:underline">Pay Now</a>
                         <a class="text-red-500 hover:underline" onclick="deleteOrder({{ order.id }})">Cancel Order</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
                 {% if orders|length == 0 %}
                 <tr>
-                    <td colspan="7" class="border border-gray-300 px-4 py-2 text-center text-gray-500">No orders found.</td>
+                    <td colspan="7" class="border border-gray-300 px-4 py-2 text-center text-gray-500">No orders found.
+                    </td>
                 </tr>
                 {% endif %}
             </tbody>

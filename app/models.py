@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, timedelta
 
 db = SQLAlchemy()
 
@@ -94,7 +94,7 @@ class Order(db.Model):
     order_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     total_cost = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), nullable=False, default="Pending")
-
+    deadline = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now() + timedelta(days=2))
     # Relationships
     parent = db.relationship('Parent', back_populates='orders')
     order_items = db.relationship('OrderItem', back_populates='order', cascade='all, delete-orphan')
@@ -152,3 +152,15 @@ class MenuItem (db.Model):
 
     def __repr__(self):
         return f"<MenuItem {self.name} - ${self.price:.2f}>"    
+    
+class Coupons(db.Model):
+    __tablename__ = 'coupons'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    code = db.Column(db.String(20), nullable=False, unique=True)
+    discount = db.Column(db.Float, nullable=False)
+    expiration_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='Active')
+    
+    def __repr__(self):
+        return f"<Coupon {self.code} - {self.discount}%>"
