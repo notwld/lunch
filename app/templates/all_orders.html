@@ -55,7 +55,19 @@
                     {% endfor %}
                 </td>
                 <td class="border border-gray-300 px-4 py-2">${{ order.total_cost }}</td>
-                <td class="border border-gray-300 px-4 py-2">{{ order.status }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ order.status }}
+
+                    {% if order.status == 'Paid' and not order.rating %}
+                        <button type="button" class="rate-order text-blue-500 hover:underline" data-order-id="{{ order.id }}">
+                            Rate
+                        </button>
+
+                        {% endif %}
+                        {% if order.rating %}
+                        <div class="text-sm text-gray-500">Rated: {{ order.rating }}/5</div>
+                        {% endif %}
+
+                </td>
                 <td class="border border-gray-300 px-4 py-2 text-center space-x-4">
                     <a href="/order/{{ order.id }}" class="text-blue-500 hover:underline">View</a>
                     {% if order.status not in ['Cancelled', 'Paid', 'Delivered'] %}

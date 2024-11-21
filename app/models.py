@@ -98,6 +98,7 @@ class Order(db.Model):
     # Relationships
     parent = db.relationship('Parent', back_populates='orders')
     order_items = db.relationship('OrderItem', back_populates='order', cascade='all, delete-orphan')
+    rating = db.Column(db.Integer, nullable=True)
 
     def __repr__(self):
         return f"<Order {self.id} - Total: {self.total_cost}>"
@@ -164,3 +165,5 @@ class Coupons(db.Model):
     
     def __repr__(self):
         return f"<Coupon {self.code} - {self.discount}%>"
+    
+

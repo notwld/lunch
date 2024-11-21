@@ -62,7 +62,17 @@
                         {% endfor %}
                     </td>
                     <td class="border border-gray-300 px-4 py-2">${{ order.total_cost }}</td>
-                    <td class="border border-gray-300 px-4 py-2">{{ order.status }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ order.status }} {% if order.status == 'Paid' and not order.rating %}
+                        <button type="button" class="rate-order text-blue-500 hover:underline" data-order-id="{{ order.id }}">
+                            Rate
+                        </button>
+
+                        {% endif %}
+                        {% if order.rating %}
+                        <div class="text-sm text-gray-500">Rated: {{ order.rating }}/5</div>
+                        {% endif %}
+
+                    </td>
                     <td class="border border-gray-300 px-4 py-2 text-center space-x-4">
                         <a href="/order/{{ order.id }}" class="text-blue-500 hover:underline">View</a>
                         {% if order.status not in ['Cancelled', 'Paid', 'Delivered'] %}
@@ -80,6 +90,26 @@
                 {% endif %}
             </tbody>
         </table>
+    </div>
+    <div id="rating-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 w-96">
+            <h2 class="text-xl font-semibold mb-4">Rate Your Order</h2>
+            <form id="rating-form" method="post" action="/rate">
+                <input type="hidden" name="order_id" id="rating-order-id">
+                <div class="flex justify-center space-x-2 text-3xl " id="stars">
+                    <span data-value="1" class="cursor-pointer">★</span>
+                    <span data-value="2" class="cursor-pointer">★</span>
+                    <span data-value="3" class="cursor-pointer">★</span>
+                    <span data-value="4" class="cursor-pointer">★</span>
+                    <span data-value="5" class="cursor-pointer">★</span>
+                </div>
+                <input type="hidden" name="rating" id="rating-value" value="">
+                <div class="mt-4 text-center">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Submit</button>
+                    <button type="button" class="ml-2 text-red-500 hover:underline" onclick="closeRatingModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 <script>
@@ -101,5 +131,35 @@
             });
         }
     };
+    document.querySelectorAll('button.rate-order').forEach(button => {
+        button.addEventListener('click', () => {
+            const orderId = button.dataset.orderId;
+            document.getElementById('rating-order-id').value = orderId;
+            document.getElementById('rating-modal').classList.remove('hidden');
+        });
+    });
+
+    // Close Rating Modal
+    const closeRatingModal = () => {
+        document.getElementById('rating-modal').classList.add('hidden');
+    };
+
+    // Handle Star Clicks
+    const stars = document.querySelectorAll('#stars span');
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const rating = star.getAttribute('data-value');
+            document.getElementById('rating-value').value = rating;
+            console.log(rating);
+            // Highlight selected stars
+            stars.forEach(s => {
+                if (parseInt(s.getAttribute('data-value')) <= parseInt(rating)) {
+                    s.classList.add('text-red-500');
+                } else {
+                    s.classList.remove('text-red-500');
+                }
+            });
+        });
+    });
 </script>
 {% endblock %}

@@ -8,8 +8,9 @@ admin = Blueprint('admin', __name__)
 @admin.route('/admin-dashboard', methods=['GET'])
 @login_required
 def admin_dashboard():
-    orders = Order.query.all()
-    return render_template('admin_dashboard.html', orders=orders)
+    orders = Order.query.filter_by(status='Paid').all()
+    total_revenue = sum(order.total_cost for order in orders)
+    return render_template('admin_dashboard.html', orders=orders ,total_revenue=total_revenue)
 
 @admin.route('/customers', methods=['GET'])
 @login_required

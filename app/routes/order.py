@@ -178,8 +178,8 @@ def order_detail(id):
     return render_template('order_details.html', order=order, order_items=order_items ,child=child)
 
 stripe_keys = {
-    "publishable_key": "pk_test_51QCkmz03CyqWPRusYuSOzKxxlnpFLVB13wUFm1KOl59JoWB7Y9vJjVU96cPNMV0fDSrT1oHrourmpldvnGmeO1xo00IvIlmErE",
-    "secret_key": "sk_test_51QCkmz03CyqWPRusF1gu2EgcKBaLFXIB4ev9yy2oy9trS4fzWLLBKt8lgSUVTEIPTCJD8fFqFsnCToqMlpatO6VC002smoHM5J",
+    "publishable_key": "pk_test_51QBLnNKvpNRsCJqfxmG8PuASERhdFSD03OuYCzs3bkzThj4o2FVXl7XTIbtGPr3rIYi87ImQ8xedqn6PfusaE5yv00G63f55Io",
+    "secret_key": "sk_test_51QBLnNKvpNRsCJqfyoz2ds9no6RmGmynP4THyGYWOUdHZUqCttyqceoQ0K06A78Wavc9a9fIAMD6FXQZ0HWnKMeD00A0zSasxq",
 }
 
 stripe.api_key = stripe_keys["secret_key"]
@@ -252,5 +252,22 @@ def payment_post(id):
         # Handle any unexpected errors
         flash(f"An unexpected error occurred: {str(e)}")
         return redirect(f"/order/{id}/payment")
+
+    return redirect("/")
+
+@order.route('/rate', methods=['POST'])
+def rate_order():
+    order_id = request.form['order_id']
+    rating = float(request.form['rating'])
+    if rating < 1 or rating > 5:
+        flash('Invalid rating value. Please provide a rating between 1 and 5.')
+        return redirect('/')
+    if not order_id:
+        flash('Order ID not provided.')
+        return redirect('/')
+    order = Order.query.get(order_id)
+    if order:
+        order.rating = rating
+        db.session.commit()
 
     return redirect("/")
