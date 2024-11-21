@@ -5,11 +5,34 @@
     <h1 class="text-3xl font-semibold text-center mb-8">
         All Orders
     </h1>
+
+    <!-- Filter Form -->
+    <form method="GET" action="/all-orders" class="mb-6 space-x-4">
+        <label for="status">Status:</label>
+        <select name="status" id="status" class="px-4 py-2 border border-gray-300 rounded-md">
+            <option value="">All</option>
+            <option value="Paid">Paid</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Pending">Pending</option>
+        </select>
+
+        <label for="date">Date:</label>
+        <input type="date" name="date" id="date" class="px-4 py-2 border border-gray-300 rounded-md" />
+
+        <label for="email">Customer Email:</label>
+        <input type="text" name="email" id="email" class="px-4 py-2 border border-gray-300 rounded-md" placeholder="Search by email" />
+
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Filter</button>
+    </form>
+
+    <!-- Orders Table -->
     <table class="table-auto w-full border border-gray-300">
         <thead>
             <tr>
                 <th class="border border-gray-300 px-4 py-2">Order ID</th>
                 <th class="border border-gray-300 px-4 py-2">Order On</th>
+                <th class="border border-gray-300 px-4 py-2">Order By</th>
                 <th class="border border-gray-300 px-4 py-2">Child</th>
                 <th class="border border-gray-300 px-4 py-2">Order for Day</th>
                 <th class="border border-gray-300 px-4 py-2">Total Cost</th>
@@ -22,6 +45,7 @@
             <tr>
                 <td class="border border-gray-300 px-4 py-2">{{ order.id }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ order.order_date.strftime('%B %d, %Y') }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ order.parent.email }}</td>
                 <td class="border border-gray-300 px-4 py-2">
                     {% for item in order.order_items %}
                     <div>{{ item.child.first_name }} {{ item.child.last_name }}</div>
@@ -38,12 +62,14 @@
                     <a href="/order/{{ order.id }}" class="text-blue-500 hover:underline">View</a>
                     {% if order.status not in ['Cancelled', 'Paid', 'Delivered'] %}
                     <a class="text-red-500 hover:underline" onclick="deleteOrder({{ order.id }})">Cancel Order</a>
-                {% endif %}
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
 <script>
     const deleteOrder = (id) => {
         if (confirm("Are you sure you want to delete this order?")) {

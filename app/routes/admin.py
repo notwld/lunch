@@ -62,7 +62,22 @@ def edit_parent_post(id):
 @admin.route('/all-orders', methods=['GET'])
 @login_required
 def all_orders():
-    orders = Order.query.all()
+    # Get filter parameters from the request
+    status_filter = request.args.get('status')
+    date_filter = request.args.get('date')
+    email_filter = request.args.get('email')
+
+    # Build the query with the necessary filters
+    query = Order.query
+
+    if status_filter:
+        query = query.filter(Order.status == status_filter)
+    if date_filter:
+        query = query.filter(Order.order_date == date_filter)
+    if email_filter:
+        query = query.filter(Order.parent.email.like(f'%{email_filter}%'))
+
+    orders = query.all()
     return render_template('all_orders.html', orders=orders)
 
 @admin.route('/schools', methods=['GET'])
