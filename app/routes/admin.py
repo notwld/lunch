@@ -75,7 +75,7 @@ def all_orders():
     if date_filter:
         query = query.filter(Order.order_date == date_filter)
     if email_filter:
-        query = query.filter(Order.parent.email.like(f'%{email_filter}%'))
+        query = query.filter(Order.parent.email == email_filter)
 
     orders = query.all()
     return render_template('all_orders.html', orders=orders)

@@ -231,7 +231,7 @@ def payment_post(id):
         # Check if payment was successful
         if payment_intent.status == 'succeeded':
             flash(f"Payment successful for Order ID: {order.id}")
-            order.status = "Paid - Not Delivered"
+            order.status = "Paid"
             db.session.commit()  # Update the order status
         else:
             # Handle failed payments (e.g., declined card, insufficient funds)
