@@ -50,6 +50,9 @@ def edit_profile():
 @login_required
 def edit_profile_post():
     data = request.form
+    if not data or not data['first_name'] or not data['last_name'] or not data['state'] or not data['city'] or not data['zip_code']:
+        flash('All fields are required')
+        return redirect(url_for('dashboard.edit_profile'))
     current_user.first_name = data['first_name']
     current_user.last_name = data['last_name']
     current_user.address = data['address']
@@ -84,11 +87,18 @@ def edit_child(id):
 def edit_child_post(id):
     data = request.form
     child = Child.query.get(id)
+    if not child:
+        flash('Child not found')
+        return redirect('/')
+    if not data or not data['first_name'] or not data['last_name'] or not data['state'] or not data['county'] or not data['grade']:
+        flash('All fields are required')
+        return redirect(url_for('dashboard.edit_child', id=id))
     child.first_name = data['first_name']
     child.last_name = data['last_name']
     child.state = data['state']
     child.county = data['county']
-    child.school_id = data['school_id']
+    if data['school_id']:
+        child.school_id = data['school_id']
     child.grade = data['grade']
     child.allergies = data.get('allergies')
     db.session.commit()
