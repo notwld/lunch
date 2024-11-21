@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, jsonify,flash,redirect
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta, date
 from app.models import db,Child,Order,OrderItem,MenuItem,Coupons
+import stripe
 
 order = Blueprint('order', __name__)
 
@@ -176,3 +177,80 @@ def order_detail(id):
     child = Child.query.get(order_items[0].child_id)
     return render_template('order_details.html', order=order, order_items=order_items ,child=child)
 
+stripe_keys = {
+    "publishable_key": "pk_test_51QCkmz03CyqWPRusYuSOzKxxlnpFLVB13wUFm1KOl59JoWB7Y9vJjVU96cPNMV0fDSrT1oHrourmpldvnGmeO1xo00IvIlmErE",
+    "secret_key": "sk_test_51QCkmz03CyqWPRusF1gu2EgcKBaLFXIB4ev9yy2oy9trS4fzWLLBKt8lgSUVTEIPTCJD8fFqFsnCToqMlpatO6VC002smoHM5J",
+}
+
+stripe.api_key = stripe_keys["secret_key"]
+@order.route('/order/<int:id>/payment', methods=['GET'])
+@login_required
+def payment(id):
+    order = Order.query.get(id)
+    if order is None:
+        flash('Order not found')
+        return redirect('/')
+    order_items = OrderItem.query.filter_by(order_id=order.id).all()
+    amount = int(order.total_cost * 100)
+    return render_template('checkout.html', order=order, order_items=order_items, amount=amount, key=stripe_keys['publishable_key'])
+
+@order.route('/order/<int:id>/payment', methods=['POST'])
+@login_required
+def payment_post(id):
+    # Retrieve the order
+    order = Order.query.get(id)
+    if not order:
+        flash("Order not found.")
+        return redirect("/")
+   
+
+    # Get payment method ID from the form
+    payment_method_id = request.form.get("payment_method_id")
+    if not payment_method_id:
+        flash("Payment method not provided.")
+        return redirect(f"/order/{id}/payment")
+
+    # Calculate the total amount in cents (Stripe expects amount in the smallest currency unit)
+    amount = int(order.total_cost * 100)
+
+    try:
+        # Create a new Stripe customer for the order
+        customer = stripe.Customer.create(email=order.parent.email)
+
+        # Create a PaymentIntent with the provided payment method
+        payment_intent = stripe.PaymentIntent.create(
+            customer=customer.id,
+            description=f"Paid by {order.parent.email} for Order ID: {order.id}",
+            amount=amount,
+            currency="usd",
+            payment_method=payment_method_id,
+            off_session=True,  # Payment without user interaction
+            confirm=True,      # Immediately confirm the payment
+        )
+
+        # Check if payment was successful
+        if payment_intent.status == 'succeeded':
+            flash(f"Payment successful for Order ID: {order.id}")
+            order.status = "Paid"
+            db.session.commit()  # Update the order status
+        else:
+            # Handle failed payments (e.g., declined card, insufficient funds)
+            flash(f"Payment failed: {payment_intent.last_payment_error.message}")
+            return redirect(f"/order/{id}/payment")
+
+    except stripe.error.CardError as e:
+        # Handle card errors (e.g., declined cards)
+        flash(f"Payment failed: {e.error.message}")
+        return redirect(f"/order/{id}/payment")
+
+    except stripe.error.StripeError as e:
+        # Handle other Stripe errors (e.g., API issues)
+        flash(f"An error occurred: {e.user_message}")
+        return redirect(f"/order/{id}/payment")
+
+    except Exception as e:
+        # Handle any unexpected errors
+        flash(f"An unexpected error occurred: {str(e)}")
+        return redirect(f"/order/{id}/payment")
+
+    return redirect("/")
