@@ -1,0 +1,175 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div class="w-screen flex justify-center items-center mt-8">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-semibold mb-6 text-center">Edit Order Menu </h2>
+        <div class="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto mt-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">You previously ordered:</h2>
+        
+            <div class="space-y-4">
+                <!-- Entree -->
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>{{ order_items.entree_name }}</span>
+                    </div>
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>${{ order_items.entree_price }}</span>
+                    </div>
+                </div>
+        
+                <!-- Side -->
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>{{ order_items.side_name }}</span>
+                    </div>
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>${{ order_items.side_price }}</span>
+                    </div>
+                </div>
+        
+                <!-- Produce -->
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>{{ order_items.produce_name }}</span>
+                    </div>
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>${{ order_items.produce_price }}</span>
+                    </div>
+                </div>
+        
+                <!-- Dessert -->
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>{{ order_items.dessert_name }}</span>
+                    </div>
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>${{ order_items.dessert_price }}</span>
+                    </div>
+                </div>
+        
+                <!-- Drink -->
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>{{ order_items.drink_name }}</span>
+                    </div>
+                    <div class="text-lg font-medium text-gray-800">
+                        <span>${{ order_items.drink_price }}</span>
+                    </div>
+                </div>
+        
+                <!-- Total -->
+                <div class="flex justify-between items-center font-semibold text-xl text-gray-900 mt-4 border-t pt-4">
+                    <span>Total Cost was</span>
+                    <span>${{ total }}</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <form action="/edit-order/{{order_items.id}}" class="my-5" method="POST" onsubmit="(e) => e.preventDefault()">
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Entree:</label>
+                <select class="w-full px-2 py-1 border rounded-md" id="entree" name="entree">
+                    <option value="0">Select an Entree</option>
+                    {% for item in menu.entrees %}
+                    <option value="{{ item.id }}">
+                        {{ item.name }} - ${{ item.price }} - {{ item.cautions }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+
+                <!-- Sides -->
+                <label class="block text-sm font-medium mt-2">Sides:</label>
+                <select class="w-full px-2 py-1 border rounded-md" id="sides" name="sides">
+                    <option value="0">Select a Side</option>
+                    {% for item in menu.sides %}
+                    <option value="{{ item.id  }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Produce -->
+                <label class="block text-sm font-medium mt-2">Produce:</label>
+                <select class="w-full px-2 py-1 border rounded-md" id="produce" name="produce">
+                    <option value="0">Select Produce</option>
+                    {% for item in menu.produce %}
+                    <option value="{{ item.id }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Dessert -->
+                <label class="block text-sm font-medium mt-2">Dessert:</label>
+                <select class="w-full px-2 py-1 border rounded-md" id="dessert" name="dessert">
+                    <option value="0">Select a Dessert</option>
+                    {% for item in menu.desserts %}
+                    <option value="{{ item.id  }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Drink -->
+                <label class="block text-sm font-medium mt-2">Drink:</label>
+                <select class="w-full px-2 py-1 border rounded-md" id="drink" name="drink">
+                    <option value="0">Select a Drink</option>
+                    {% for item in menu.drinks %}
+                    <option value="{{ item.id }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+            <div class="bg-gray-100 p-4">
+                <h1 id="totalCost" class="text-lg font-semibold text-center">Total Cost: $0.00
+
+            </div>
+            <div class="flex justify-center mt-3">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Save
+                    Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const menu = {{ menu | tojson }};
+    const entree = document.getElementById('entree');
+    const sides = document.getElementById('sides');
+    const produce = document.getElementById('produce');
+    const dessert = document.getElementById('dessert');
+    const drink = document.getElementById('drink');
+    const totalCost = document.getElementById('totalCost');
+    const totalCostInput = document.getElementById('total_cost');
+
+    entree.addEventListener('change', () => {
+        calculateTotal();
+    });
+
+    sides.addEventListener('change', () => {
+        calculateTotal();
+    });
+
+    produce.addEventListener('change', () => {
+        calculateTotal();
+    });
+
+    dessert.addEventListener('change', () => {
+        calculateTotal();
+    });
+
+    drink.addEventListener('change', () => {
+        calculateTotal();
+    });
+
+    function calculateTotal() {
+        const entreePrice = menu["entrees"].map(item => item.id == entree.value ? item.price : 0).reduce((a, b) => a + b, 0);
+        const sidesPrice = menu["sides"].map(item => item.id == sides.value ? item.price : 0).reduce((a, b) => a + b, 0);
+        const producePrice = menu["produce"].map(item => item.id == produce.value ? item.price : 0).reduce((a, b) => a + b, 0);
+        const dessertPrice = menu["desserts"].map(item => item.id == dessert.value ? item.price : 0).reduce((a, b) => a + b, 0);
+        const drinkPrice = menu["drinks"].map(item => item.id == drink.value ? item.price : 0).reduce((a, b) => a + b, 0);
+        const total = entreePrice + sidesPrice + producePrice + dessertPrice + drinkPrice;
+        totalCost.textContent = `Total Cost: $${total.toFixed(2)}`;
+
+
+    }
+</script>
+{% endblock %}

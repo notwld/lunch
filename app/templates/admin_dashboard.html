@@ -53,11 +53,17 @@
         <div class="">
             <h2 class="text-lg font-medium text-center mb-4">Recent Orders</h2>
             {% for order in recent_orders %}
-            <div class="flex bg-white p-6 rounded-lg shadow-md mb-4 w-full justify-between items-center">
+            <div class="flex bg-white p-6 rounded-lg shadow-md mb-4 w-full justify-between items-center hover:shadow-lg cursor-pointer" onclick="window.location.href='/order/{{ order.id }}'">
                 <h2 class="text-xl font-semibold mb-4">Order ID: {{ order.id }}</h2>
                 <p class="text-gray-700 mb-4">Order By: {{ order.parent.email }}</p>
                 <p class="text-gray-700 mb-4">Total Cost: ${{ order.total_cost }}</p>
                 <p class="text-gray-700 mb-4">Status: {{ order.status }}</p>
+                {% if order.rating %}
+                <p class="text-gray-700 mb-4">Rating: {{ order.rating }}</p>
+                {% else %}
+                <p class="text-gray-700 mb-4">Not Rated</p>
+                {% endif %}
+
             </div>
             {% endfor %}
         </div>

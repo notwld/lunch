@@ -1,9 +1,16 @@
-from flask import Blueprint, render_template, request, jsonify,flash,redirect
+from flask import Blueprint, render_template, request, jsonify,flash,redirect,current_app,send_from_directory
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta, date
 from app.models import db,Child,Order,OrderItem,Parent,School,MenuItem,Coupons
+import os
 
 admin = Blueprint('admin', __name__)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+
+# Helper function to check allowed file types
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @admin.route('/admin-dashboard', methods=['GET'])
 @login_required
@@ -151,7 +158,7 @@ def all_orders():
     if email_filter:
         query = query.filter(Order.parent.email == email_filter)
 
-    orders = query.all()
+    orders = query.order_by(Order.id.desc()).all()
     return render_template('all_orders.html', orders=orders)
 
 @admin.route('/schools', methods=['GET'])
@@ -268,27 +275,46 @@ def add_menu():
         return redirect('/')
     return render_template('add-menu-item.html')
 
+from werkzeug.utils import secure_filename
+import os
 @admin.route('/add-menu', methods=['POST'])
 @login_required
 def add_menu_post():
     if not current_user.is_admin:
         return redirect('/')
+    
     data = request.form
-    if not data['name'] or not data['price'] or not data['type'] or not data['cautions'] or not data['description']:
+    file = request.files.get('img')
+
+    # Ensure all required fields are filled
+    if not data.get('name') or not data.get('price') or not data.get('type') or not data.get('cautions') or not data.get('description'):
         flash('All fields are required')
         return redirect('/add-menu')
+    
+    img_url = ""
+    if file and file.filename != "":
+        filename = secure_filename(file.filename)
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+        img_url = f'/static/uploads/{filename}' 
+    # Create the menu item
     menu_item = MenuItem(
         name=data['name'],
         price=data['price'],
         type=data['type'],
         cautions=data['cautions'],
         description=data['description'],
-        img_url=data['img_url'] or ""
+        img_url=img_url
     )
     db.session.add(menu_item)
     db.session.commit()
     flash('Menu item added successfully')
     return redirect('/view-menus')
+
+@admin.route('/static/uploads/<filename>', methods=['GET'])
+def uploaded_file(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
 
 @admin.route('/edit-menu/<int:id>', methods=['GET'])
@@ -305,13 +331,20 @@ def edit_menu_post(id):
     if not current_user.is_admin:
         return redirect('/')
     data = request.form
+    file = request.files.get('img')
+    if file and file.filename != "":
+        filename = secure_filename(file.filename)
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+        img_url = f'/static/uploads/{filename}'
     menu = MenuItem.query.get(id)
     menu.name = data['name']
     menu.price = data['price']
     menu.type = data['type']
     menu.cautions = data['cautions']
     menu.description = data['description']
-    menu.img_url = data['img_url']
+    menu.img_url = img_url or menu.img_url
     db.session.commit()
     flash('Menu item updated successfully')
     return redirect('/view-menus')

@@ -1,0 +1,62 @@
+{% extends "admin_dashboard.html" %}
+
+{% block admin %}
+<div class="flex flex-col justify-center items-center mt-8">
+    <h1 class="text-3xl font-semibold text-center mb-8">
+        Admin Dashboard
+    </h1>
+    <h2>Total Revenue: {{total_revenue}} usd</h2>
+    <canvas id="totalRevenueChart"></canvas>
+
+    <h2>Top Paying Parents</h2>
+    <canvas id="topPayingParentsChart"></canvas>
+
+    <h2>Top Selling Meals</h2>
+    <canvas id="topSellingMealsChart"></canvas>
+</div>
+<script>
+    // Data passed from Flask
+    const totalRevenue = {{ total_revenue }};
+    const topParents = {{ top_parents|tojson }};
+    const topMeals = {{ top_meals|tojson }};
+
+    // Render Total Revenue Chart
+    new Chart(document.getElementById('totalRevenueChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Total Revenue'],
+            datasets: [{
+                label: 'Revenue',
+                data: [totalRevenue],
+                backgroundColor: ['#4caf50']
+            }]
+        }
+    });
+
+    // Render Top Paying Parents Chart
+    new Chart(document.getElementById('topPayingParentsChart'), {
+        type: 'bar',
+        data: {
+            labels: topParents.map(p => p.name),
+            datasets: [{
+                label: 'Total Spent',
+                data: topParents.map(p => p.total_spent),
+                backgroundColor: ['#ff9800']
+            }]
+        }
+    });
+
+    // Render Top Selling Meals Chart
+    new Chart(document.getElementById('topSellingMealsChart'), {
+        type: 'pie',
+        data: {
+            labels: topMeals.map(m => m.name),
+            datasets: [{
+                label: 'Order Count',
+                data: topMeals.map(m => m.order_count),
+                backgroundColor: ['#2196f3', '#e91e63', '#9c27b0', '#ffeb3b', '#4caf50']
+            }]
+        }
+    });
+</script>
+{% endblock %}

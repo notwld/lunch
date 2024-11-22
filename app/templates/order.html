@@ -4,86 +4,100 @@
 
 {% block content %}
 <div class="container mx-auto py-8" x-data="menuData">
-    <h1 class="text-3xl font-bold text-center mb-6">Monthly Lunch Order</h1>
-    <select class="w-full px-2 py-1 my-3 border rounded-md">
-        <option value="0">Select Childern</option>
+    <h1 class="text-3xl font-bold text-center mb-6">Select Month and Place Order</h1>
+
+    <!-- Select Month Dropdown -->
+    <label class="block text-sm font-medium mb-2">Select Month:</label>
+    <select class="w-full px-2 py-1 border rounded-md mb-4" x-model="selectedMonth" @change="updateWeekdays()">
+        <option value="">-- Select a Month --</option>
+        {% for month_key, weekdays in weekdays_by_month.items() %}
+        <option value="{{ month_key }}">{{ month_key.split('-')[0] }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Select Child Dropdown -->
+    <label class="block text-sm font-medium mb-2">Select Child:</label>
+    <select class="w-full px-2 py-1 border rounded-md mb-4" id="child">
+        <option value="0">Select Child</option>
         {% for child in children %}
         <option value="{{ child.id }}">{{ child.first_name }} {{ child.last_name }}</option>
         {% endfor %}
     </select>
+
+    <!-- Display Weekdays -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {% for day in weekdays %}
-        <div class="bg-white shadow-md rounded-lg p-4">
-            <h2 class="text-lg font-semibold text-center {% if locked_days[day] %}text-gray-400{% endif %}"
-                x-text="dailySelections['day{{ loop.index0 }}'].day">
-                {{ day.strftime('%A, %B %d') }}
-            </h2>
-            {% if locked_days[day] %}
-            <div class="text-center mt-4">
-                <img src="{{ url_for('static', filename='assets/lock.png') }}" alt="Locked" class="mx-auto mt-4">
+        <template x-for="(day, index) in displayedWeekdays" :key="index">
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h2 class="text-lg font-semibold text-center"
+                    :class="lockedDays[selectedMonth][day] ? 'text-gray-400' : ''">
+                    <span x-text="new Date(day).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })"></span>
+                </h2>
+                <template x-if="lockedDays[selectedMonth][day]">
+                    <div class="text-center mt-4">
+                        <img src="{{ url_for('static', filename='assets/lock.png') }}" alt="Locked" class="mx-auto mt-4">
+                    </div>
+                </template>
+                <template x-if="!lockedDays[selectedMonth][day]">
+                    <form class="mt-4">
+                        <!-- Entree -->
+                        <label class="block text-sm font-medium">Entree:</label>
+                        <select class="w-full px-2 py-1 border rounded-md"
+                            x-model="dailySelections[day].entree">
+                            <option value="0">Select an Entree</option>
+                            {% for item in menu.entrees %}
+                            <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Sides -->
+                        <label class="block text-sm font-medium mt-2">Sides:</label>
+                        <select class="w-full px-2 py-1 border rounded-md"
+                            x-model="dailySelections[day].side">
+                            <option value="0">Select a Side</option>
+                            {% for item in menu.sides %}
+                            <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Produce -->
+                        <label class="block text-sm font-medium mt-2">Produce:</label>
+                        <select class="w-full px-2 py-1 border rounded-md"
+                            x-model="dailySelections[day].produce">
+                            <option value="0">Select Produce</option>
+                            {% for item in menu.produce %}
+                            <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Dessert -->
+                        <label class="block text-sm font-medium mt-2">Dessert:</label>
+                        <select class="w-full px-2 py-1 border rounded-md"
+                            x-model="dailySelections[day].dessert">
+                            <option value="0">Select a Dessert</option>
+                            {% for item in menu.desserts %}
+                            <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Drink -->
+                        <label class="block text-sm font-medium mt-2">Drink:</label>
+                        <select class="w-full px-2 py-1 border rounded-md"
+                            x-model="dailySelections[day].drink">
+                            <option value="0">Select a Drink</option>
+                            {% for item in menu.drinks %}
+                            <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Total -->
+                        <div class="mt-4">
+                            <span class="font-semibold">Total:</span>
+                            <span class="text-lg font-bold" x-text="'$' + dailyTotal(day)"></span>
+                        </div>
+                    </form>
+                </template>
             </div>
-
-            {% else %}
-            <form class="mt-4">
-                <!-- Entree -->
-                <label class="block text-sm font-medium">Entree:</label>
-                <select class="w-full px-2 py-1 border rounded-md"
-                    x-model="dailySelections['day{{ loop.index0 }}'].entree">
-                    <option value="0">Select an Entree</option>
-                    {% for item in menu.entrees %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}  - {{ item.cautions }}</option>
-                    {% endfor %}
-                </select>
-
-                <!-- Sides -->
-                <label class="block text-sm font-medium mt-2">Sides:</label>
-                <select class="w-full px-2 py-1 border rounded-md"
-                    x-model="dailySelections['day{{ loop.index0 }}'].side">
-                    <option value="0">Select a Side</option>
-                    {% for item in menu.sides %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}  - {{ item.cautions }}</option>
-                    {% endfor %}
-                </select>
-
-                <!-- Produce -->
-                <label class="block text-sm font-medium mt-2">Produce:</label>
-                <select class="w-full px-2 py-1 border rounded-md"
-                    x-model="dailySelections['day{{ loop.index0 }}'].produce">
-                    <option value="0">Select Produce</option>
-                    {% for item in menu.produce %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}  - {{ item.cautions }}</option>
-                    {% endfor %}
-                </select>
-
-                <!-- Dessert -->
-                <label class="block text-sm font-medium mt-2">Dessert:</label>
-                <select class="w-full px-2 py-1 border rounded-md"
-                    x-model="dailySelections['day{{ loop.index0 }}'].dessert">
-                    <option value="0">Select a Dessert</option>
-                    {% for item in menu.desserts %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }}  - {{ item.cautions }}</option>
-                    {% endfor %}
-                </select>
-
-                <!-- Drink -->
-                <label class="block text-sm font-medium mt-2">Drink:</label>
-                <select class="w-full px-2 py-1 border rounded-md"
-                    x-model="dailySelections['day{{ loop.index0 }}'].drink">
-                    <option value="0">Select a Drink</option>
-                    {% for item in menu.drinks %}
-                    <option value="{{ item.price }}">{{ item.name }} - ${{ item.price }} - {{ item.cautions }}</option>
-                    {% endfor %}
-                </select>
-
-                <!-- Total -->
-                <div class="mt-4">
-                    <span class="font-semibold">Total:</span>
-                    <span class="text-lg font-bold" x-text="'$' + dailyTotal('day{{ loop.index0 }}')"></span>
-                </div>
-            </form>
-            {% endif %}
-        </div>
-        {% endfor %}
+        </template>
     </div>
 
     <!-- Monthly Total -->
@@ -92,85 +106,86 @@
         <p class="text-xl font-bold" x-text="'$' + monthlyTotal()"></p>
     </div>
     <div class="text-center mt-8">
-        <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700" x-on:click="addToCart()">Add to
-            Cart</button>
+        <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700" x-on:click="addToCart()">Add to Cart</button>
     </div>
 </div>
 
 <script>
     document.addEventListener("alpine:init", () => {
         Alpine.data("menuData", () => ({
+            selectedMonth: "",
+            displayedWeekdays: [],
+            weekdaysByMonth: {{ weekdays_by_month|tojson }},
+            lockedDays: {{ locked_days|tojson }},
             dailySelections: {},
-            items: [],
             menu: {
                 entrees: {{ menu.entrees|tojson }},
                 sides: {{ menu.sides|tojson }},
                 produce: {{ menu.produce|tojson }},
                 desserts: {{ menu.desserts|tojson }},
-                drinks: {{ menu.drinks|tojson }}
+                drinks: {{ menu.drinks|tojson }},
             },
             init() {
-                // Initialize dailySelections for all days
-                {% for day in weekdays %}
-                this.dailySelections['day{{ loop.index0 }}'] = {
-                    day: '{{ day.strftime('%A, %B %d') }}',
-                    entree: 0,
-                    side: 0,
-                    produce: 0,
-                    dessert: 0,
-                    drink: 0,
-                };
-                {% endfor %}
+                // Initialize daily selections for all days
+                Object.keys(this.weekdaysByMonth).forEach(month => {
+                    this.weekdaysByMonth[month].forEach(day => {
+                        this.dailySelections[day] = {
+                            entree: 0,
+                            side: 0,
+                            produce: 0,
+                            dessert: 0,
+                            drink: 0,
+                        };
+                    });
+                });
             },
-            // Function to ensure all values are numeric
+            updateWeekdays() {
+                if (this.selectedMonth) {
+                    this.displayedWeekdays = this.weekdaysByMonth[this.selectedMonth];
+                } else {
+                    this.displayedWeekdays = [];
+                }
+            },
             parseNumber(value) {
                 return parseFloat(value) || 0;
             },
-            dailyTotal(dayKey) {
-                const daySelection = this.dailySelections[dayKey];
-                // Calculate the total for the day, ensuring that each value is numeric
+            dailyTotal(day) {
+                const selection = this.dailySelections[day];
                 return (
-                    this.parseNumber(daySelection.entree) +
-                    this.parseNumber(daySelection.side) +
-                    this.parseNumber(daySelection.produce) +
-                    this.parseNumber(daySelection.dessert) +
-                    this.parseNumber(daySelection.drink)
+                    this.parseNumber(selection.entree) +
+                    this.parseNumber(selection.side) +
+                    this.parseNumber(selection.produce) +
+                    this.parseNumber(selection.dessert) +
+                    this.parseNumber(selection.drink)
                 ).toFixed(2);
             },
             monthlyTotal() {
-                return Object.keys(this.dailySelections)
-                    .reduce((total, dayKey) => total + parseFloat(this.dailyTotal(dayKey)), 0)
+                return this.displayedWeekdays
+                    .reduce((total, day) => total + parseFloat(this.dailyTotal(day)), 0)
                     .toFixed(2);
             },
-            
             addToCart() {
                 // Get the selected child
-                const childId = document.querySelector('select').value;
+                const childId = document.getElementById('child').value;
                 if(childId=="0") {
                     alert('Please select a child');
                     return;
                 }
 
-                // Initialize the array to hold the selected items
-                let selectedItems = [];
-
-                // Loop through each day's selections
-                Object.keys(this.dailySelections).forEach(dayKey => {
-                    const daySelection = this.dailySelections[dayKey];
-
-                    // For each meal type, find the selected item name and price
-                    const items = {
-                        day: daySelection.day,
-                        entree: this.getItemDetails(daySelection.entree, this.menu.entrees),
-                        side: this.getItemDetails(daySelection.side, this.menu.sides),
-                        produce: this.getItemDetails(daySelection.produce, this.menu.produce),
-                        dessert: this.getItemDetails(daySelection.dessert, this.menu.desserts),
-                        drink: this.getItemDetails(daySelection.drink, this.menu.drinks)
+                // Get the selected items for each day
+                const selectedItems = this.displayedWeekdays.map(day => {
+                    const selections = this.dailySelections[day];
+                    return {
+                        day,
+                        entree: this.getItemDetails(selections.entree, this.menu.entrees),
+                        side: this.getItemDetails(selections.side, this.menu.sides),
+                        produce: this.getItemDetails(selections.produce, this.menu.produce),
+                        dessert: this.getItemDetails(selections.dessert, this.menu.desserts),
+                        drink: this.getItemDetails(selections.drink, this.menu.drinks),
                     };
-
-                    // Add the day's items to the selectedItems array
-                    selectedItems.push(items);
                 });
+
+                console.log(selectedItems);
                 const cart = JSON.parse(localStorage.getItem('cart')) || [];
                 
 
@@ -190,8 +205,6 @@
                           window.location.href = '/cart';
                     });
             },
-
-            // Helper function to get the name and price of the selected item
             getItemDetails(selectedPrice, menuCategory) {
                 if (selectedPrice === 0) return { name: 'None', price: 0 }; // If nothing is selected
                 const item = menuCategory.find(i => i.price == selectedPrice);
@@ -200,6 +213,4 @@
         }));
     });
 </script>
-
-</div>
 {% endblock %}

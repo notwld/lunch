@@ -39,6 +39,7 @@
                         <th class="border border-gray-300 px-4 py-2">Produce</th>
                         <th class="border border-gray-300 px-4 py-2">Side</th>
                         <th class="border border-gray-300 px-4 py-2">Item Total</th>
+                        <th class="border border-gray-300 px-4 py-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,6 +52,9 @@
                         <td class="border border-gray-300 px-4 py-2">{{ item.produce_name }} (${{ item.produce_price }})</td>
                         <td class="border border-gray-300 px-4 py-2">{{ item.side_name }} (${{ item.side_price }})</td>
                         <td class="border border-gray-300 px-4 py-2">${{ item.total_price }}</td>
+                        <td class="border border-gray-300 px-4 py-2">
+                            <a href="/edit-order/{{ item.id }}" class="text-blue-500 hover:underline">Edit Menu</a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

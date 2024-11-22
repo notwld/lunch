@@ -10,7 +10,7 @@ dashboard = Blueprint('dashboard', __name__)
 def get_users():
     #list all childern of current user
     children = Child.query.filter_by(parent_id=current_user.id).all()
-    orders = Order.query.filter_by(parent_id=current_user.id).all()
+    orders = Order.query.filter_by(parent_id=current_user.id).order_by(Order.id.desc()).all()
     if current_user.is_admin:
         return redirect('/admin-dashboard')
     
@@ -39,6 +39,11 @@ def add_child_post():
             parent_id=current_user.id,
             school_id=data['school_id']
         )
+        school = School.query.get(data['school_id'])
+        if school:
+            school.total_students = 0
+            school.total_students = int(school.total_students) + 1
+            db.session.commit()
         db.session.add(child)
         db.session.commit()
         flash('Child added successfully')
@@ -82,6 +87,10 @@ def edit_profile_post():
 @login_required
 def delete_child(id):
     child = Child.query.get(id)
+    school = School.query.get(child.school_id)
+    if school:
+        school.total_students = int(school.total_students) - 1
+        db.session.commit()
     db.session.delete(child)
     db.session.commit()
     flash('Child deleted successfully')
@@ -114,6 +123,7 @@ def edit_child_post(id):
             child.school_id = data['school_id']
         child.grade = data['grade']
         child.allergies = data.get('allergies')
+       
         db.session.commit()
         flash('Child updated successfully')
         return redirect('/')

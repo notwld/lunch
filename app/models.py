@@ -99,7 +99,11 @@ class Order(db.Model):
     parent = db.relationship('Parent', back_populates='orders')
     order_items = db.relationship('OrderItem', back_populates='order', cascade='all, delete-orphan')
     rating = db.Column(db.Integer, nullable=True)
-
+    placed_at = db.Column(db.DateTime, nullable=True, default=datetime.utcnow)
+    paid_at = db.Column(db.DateTime, nullable=True)
+    payment_intent_id = db.Column(db.String(255), nullable=True)
+    payment_method_id = db.Column(db.String(255), nullable=True)
+    cust_id = db.Column(db.String(255), nullable=True)
     def __repr__(self):
         return f"<Order {self.id} - Total: {self.total_cost}>"
 

@@ -3,18 +3,25 @@ from flask_login import login_required, current_user
 from datetime import datetime, timedelta, date
 from app.models import db,Child,Order,OrderItem,MenuItem,Coupons
 import stripe
+from calendar import month_name
 
 order = Blueprint('order', __name__)
+stripe_keys = {
+    "publishable_key": "pk_test_51QBLnNKvpNRsCJqfxmG8PuASERhdFSD03OuYCzs3bkzThj4o2FVXl7XTIbtGPr3rIYi87ImQ8xedqn6PfusaE5yv00G63f55Io",
+    "secret_key": "sk_test_51QBLnNKvpNRsCJqfyoz2ds9no6RmGmynP4THyGYWOUdHZUqCttyqceoQ0K06A78Wavc9a9fIAMD6FXQZ0HWnKMeD00A0zSasxq",
+}
+
+stripe.api_key = stripe_keys["secret_key"]
 
 @order.route('/order', methods=['GET'])
 @login_required
 def order_page():
-    childern = current_user.children
+    children = current_user.children
     today = datetime.now()
     current_year = today.year
-    current_month = today.month
+    current_month = today.month 
 
-    # Generate all weekdays of the current month
+    # Generate all weekdays for a given year and month
     def get_weekdays_of_month(year, month):
         days = []
         total_days = (date(year, month + 1, 1) - timedelta(days=1)).day if month < 12 else 31
@@ -24,8 +31,19 @@ def order_page():
                 days.append(day_date)
         return days
 
-    weekdays = get_weekdays_of_month(current_year, current_month)
+    # Generate weekdays for the current and next month
+    weekdays_by_month = {}
+    for i in range(3):
+        month = current_month + i
+        year = current_year
+        if month > 12:
+            month -= 12
+            year += 1
+        month_key = f"{month_name[month]} {year}"  # Use month name and year as key
+        weekdays = get_weekdays_of_month(year, month)
+        weekdays_by_month[month_key] = weekdays
 
+    # Prepare menu
     menu_items = MenuItem.query.all()
     menu = {
         "entrees": [],
@@ -35,26 +53,43 @@ def order_page():
         "drinks": []
     }
 
-    # Group menu items by their type
     for item in menu_items:
         if item.type in menu:
-            menu[item.type].append({"name": item.name, "price": item.price, "description": item.description,"cautions": item.cautions})
+            menu[item.type].append({
+                "name": item.name,
+                "price": item.price,
+                "description": item.description,
+                "cautions": item.cautions
+            })
 
     # Determine locked days
-    locked_days = {day: day < today.date() for day in weekdays}
+    locked_days = {}
+    for month_key, days in weekdays_by_month.items():
+        locked_days[month_key] = {day.strftime('%Y-%m-%d'): day < today.date() for day in days}
+
+    # Convert weekdays_by_month to string format for JSON compatibility
+    weekdays_by_month_str = {
+        month_key: [day.strftime('%Y-%m-%d') for day in days]
+        for month_key, days in weekdays_by_month.items()
+    }
 
     return render_template(
         'order.html',
-        weekdays=weekdays,
+        weekdays_by_month=weekdays_by_month_str,
         menu=menu,
         locked_days=locked_days,
-        current_date=today.date(),
         children=[
-    {"id": child.id, "first_name": child.first_name, "last_name": child.last_name, "allergies": child.allergies or ""}
-    for child in childern
-]
-
+            {
+                "id": child.id,
+                "first_name": child.first_name,
+                "last_name": child.last_name,
+                "allergies": child.allergies or ""
+            }
+            for child in children
+        ]
     )
+
+
 @order.route('/get-child-allergies/<int:child_id>', methods=['GET'])
 @login_required
 def get_child_allergies(child_id):
@@ -65,7 +100,9 @@ def get_child_allergies(child_id):
 def add_to_cart():
     order_data = request.json  # Assuming you send JSON from the frontend
     child = Child.query.filter_by(id=order_data['child_id']).first()
-
+    if not child:
+        return "Child not found.", 404
+    
     filtered_selections = []
     for day in order_data['items']:
         if day['entree']['name'] == 'None' and day['side']['name'] == 'None' and day['produce']['name'] == 'None' and day['dessert']['name'] == 'None' and day['drink']['name'] == 'None':
@@ -172,12 +209,123 @@ def order_detail(id):
     child = Child.query.get(order_items[0].child_id)
     return render_template('order_details.html', order=order, order_items=order_items ,child=child)
 
-stripe_keys = {
-    "publishable_key": "pk_test_51QBLnNKvpNRsCJqfxmG8PuASERhdFSD03OuYCzs3bkzThj4o2FVXl7XTIbtGPr3rIYi87ImQ8xedqn6PfusaE5yv00G63f55Io",
-    "secret_key": "sk_test_51QBLnNKvpNRsCJqfyoz2ds9no6RmGmynP4THyGYWOUdHZUqCttyqceoQ0K06A78Wavc9a9fIAMD6FXQZ0HWnKMeD00A0zSasxq",
-}
 
-stripe.api_key = stripe_keys["secret_key"]
+@order.route('/edit-order/<int:id>', methods=['GET'])
+@login_required
+def edit_order(id):
+    # order = Order.query.get(id)
+    # if order is None:
+    #     flash('Order not found')
+    #     return redirect('/')
+    
+    # edit_deadline = order.paid_at + timedelta(days=1)
+    # if datetime.utcnow() > edit_deadline:
+    #     flash('Order can only be edited within 1 day of payment.', 'error')
+    #     return redirect('/')
+    
+    menu_items = MenuItem.query.all()
+    menu = {
+        "entrees": [],
+        "sides": [],
+        "produce": [],
+        "desserts": [],
+        "drinks": []
+    }
+
+    for item in menu_items:
+        if item.type in menu:
+            menu[item.type].append({
+                "id": item.id,
+                "name": item.name,
+                "price": item.price,
+                "description": item.description,
+                "cautions": item.cautions
+            })
+    order_items = OrderItem.query.filter_by(id=id).first()
+    total = order_items.entree_price + order_items.side_price + order_items.produce_price + order_items.dessert_price + order_items.drink_price
+    print(order_items)
+
+    return render_template('edit_order.html',total=total,order_items=order_items, menu=menu,key=stripe_keys['publishable_key'])
+
+@order.route('/edit-order/<int:id>', methods=['POST'])
+@login_required
+def edit_order_post(id):
+    try:
+        data = request.form
+        print(dict(data))
+        menu_items = []
+        for each in dict(data):
+            item = MenuItem.query.filter_by(id=int(data[each])).first()
+            menu_items.append({
+                "name": item.name,
+                "price": item.price,
+                "type": item.type
+            })
+        
+        order_items = OrderItem.query.filter_by(id=id).first()
+        order = Order.query.get(order_items.order_id)
+        if order is None:
+            flash('Order not found')
+            return redirect('/')
+        total_cost = 0
+        for item in menu_items:
+            if item['type'] == 'entrees':
+                order_items.entree_name = item['name']
+                order_items.entree_price = item['price']
+                total_cost += item['price']
+            elif item['type'] == 'sides':
+                order_items.side_name = item['name']
+                order_items.side_price = item['price']
+                total_cost += item['price']
+            elif item['type'] == 'produce':
+                order_items.produce_name = item['name']
+                order_items.produce_price = item['price']
+                total_cost += item['price']
+            elif item['type'] == 'desserts':
+                order_items.dessert_name = item['name']
+                order_items.dessert_price = item['price']
+                total_cost += item['price']
+            elif item['type'] == 'drinks':
+                order_items.drink_name = item['name']
+                order_items.drink_price = item['price']
+                total_cost += item['price']
+
+        print(total_cost)
+        # check if new total cost is less than the previous total cost
+        if total_cost < order.total_cost:
+            amount = round(order.total_cost - total_cost, 2)
+            print(amount,"is the amount to be refunded")
+            refund = stripe.Refund.create(
+                payment_intent=order.payment_intent_id,
+                amount=int(amount * 100)
+            )
+            if refund.status == 'succeeded':
+                flash('Refund successful')
+            else:
+                flash('Refund failed, please contact support')
+        else:
+            # If new total cost is greater, handle additional charge
+            amount = round(total_cost - order.total_cost, 2)
+            print(amount, "is the amount to be charged")
+ 
+
+        order.total_cost = total_cost
+        db.session.commit() 
+        redirect(f'/')
+
+
+            
+        flash('Order updated successfully')
+        # return redirect(f'/order/{id}')
+        return redirect('/')
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}")
+        print(e)
+        return redirect('/')
+
+
+
+
 @order.route('/order/<int:id>/payment', methods=['GET'])
 @login_required
 def payment(id):
@@ -227,6 +375,10 @@ def payment_post(id):
         if payment_intent.status == 'succeeded':
             flash(f"Payment successful for Order ID: {order.id}")
             order.status = "Paid"
+            order.paid_at = datetime.now()
+            order.payment_intent_id = payment_intent.id
+            order.payment_method_id = payment_method_id
+            order.cust_id = customer.id
             db.session.commit()  # Update the order status
         else:
             # Handle failed payments (e.g., declined card, insufficient funds)
