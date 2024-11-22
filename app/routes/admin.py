@@ -8,14 +8,77 @@ admin = Blueprint('admin', __name__)
 @admin.route('/admin-dashboard', methods=['GET'])
 @login_required
 def admin_dashboard():
-    orders = Order.query.filter_by(status='Paid').all()
-    total_revenue = sum(order.total_cost for order in orders)
-    return render_template('admin_dashboard.html', orders=orders ,total_revenue=total_revenue)
+    # Total Revenue
+    if not current_user.is_admin:
+        return redirect('/')
+    total_revenue = db.session.query(db.func.sum(Order.total_cost)).scalar() or 0
+
+    # Top Paying Parents
+    top_parents = (
+        db.session.query(
+            Parent.id,
+            Parent.first_name,
+            Parent.last_name,
+            db.func.sum(Order.total_cost).label('total_spent')
+        )
+        .join(Order, Parent.id == Order.parent_id)
+        .group_by(Parent.id)
+        .order_by(db.desc('total_spent'))
+        .limit(5)
+        .all()
+    )
+    top_parents_data = [
+        {"name": f"{p.first_name} {p.last_name}", "total_spent": round(p.total_spent, 2)}
+        for p in top_parents
+    ]
+
+    # Top Selling Meals
+    top_meals = (
+        db.session.query(
+            OrderItem.entree_name,
+            db.func.count(OrderItem.id).label('order_count')
+        )
+        .group_by(OrderItem.entree_name)
+        .order_by(db.desc('order_count'))
+        .limit(5)
+        .all()
+    )
+    top_meals_data = [{"name": meal.entree_name, "order_count": meal.order_count} for meal in top_meals]
+    revenue_by_month = (
+        db.session.query(
+            db.func.strftime('%Y-%m', Order.order_date).label('month'),  # For SQLite
+            db.func.sum(Order.total_cost).label('total_revenue')
+        )
+        .group_by('month')
+        .order_by('month')
+        .all()
+    )
+    revenue_data = [
+        {
+            "month": datetime.strptime(r.month, '%Y-%m').strftime('%b-%Y'),
+            "total_revenue": round(r.total_revenue, 2)
+        }
+        for r in revenue_by_month
+    ]
+    # Render Template with Metrics
+    # 5 recent orders
+    recent_orders = Order.query.order_by(Order.order_date.desc()).limit(5).all()
+    return render_template(
+        'admin_dashboard.html',
+        total_revenue=round(total_revenue, 2),
+        top_parents=top_parents_data,
+        top_meals=top_meals_data,
+        current_user=current_user,
+        revenue_data=revenue_data,
+        recent_orders=recent_orders
+    )
 
 @admin.route('/customers', methods=['GET'])
 @login_required
 def customers():
     parents = Parent.query.options(db.joinedload(Parent.children)).all()
+    if not current_user.is_admin:
+        return redirect('/')
     return render_template('customers.html' ,parents=parents)
 
 @admin.route('/childern/<int:id>', methods=['GET'])
@@ -23,11 +86,15 @@ def customers():
 def childern(id):
     parent = Parent.query.get(id)
     childern = Child.query.filter_by(parent_id=id).all()
+    if not current_user.is_admin:
+        return redirect('/')
     return render_template('childern.html', children=childern, parent=parent)
 
 @admin.route('/delete-parent/<int:id>', methods=['DELETE'])
 @login_required
 def delete_parent(id):
+    if not current_user.is_admin:
+        return redirect('/')
     parent = Parent.query.get(id)
     if not parent:
         return jsonify({"error": "Parent not found"}), 404
@@ -38,12 +105,16 @@ def delete_parent(id):
 @admin.route('/edit-parent/<int:id>', methods=['GET'])
 @login_required
 def edit_parent(id):
+    if not current_user.is_admin:
+        return redirect('/')
     parent = Parent.query.get(id)
     return render_template('edit_parent.html', user=parent)
 
 @admin.route('/edit-parent/<int:id>', methods=['POST'])
 @login_required
 def edit_parent_post(id):
+    if not current_user.is_admin:
+        return redirect('/')
     data = request.form
     parent = Parent.query.get(id)
     parent.first_name = data['first_name']
@@ -63,6 +134,8 @@ def edit_parent_post(id):
 @admin.route('/all-orders', methods=['GET'])
 @login_required
 def all_orders():
+    if not current_user.is_admin:
+        return redirect('/')
     # Get filter parameters from the request
     status_filter = request.args.get('status')
     date_filter = request.args.get('date')
@@ -84,17 +157,23 @@ def all_orders():
 @admin.route('/schools', methods=['GET'])
 @login_required
 def schools():
+    if not current_user.is_admin:
+        return redirect('/')
     schools = School.query.all()
     return render_template('schools.html', schools=schools)
 
 @admin.route('/add-school', methods=['GET'])
 @login_required
 def add_school():
+    if not current_user.is_admin:
+        return redirect('/')
     return render_template('add_school.html')
 
 @admin.route('/add-school', methods=['POST'])
 @login_required
 def add_school_post():
+    if not current_user.is_admin:
+        return redirect('/')
     name = request.form.get('school_name')
     address = request.form.get('address')
     phone_number = request.form.get('phone_number')
@@ -140,12 +219,16 @@ def add_school_post():
 @admin.route('/edit-school/<int:id>', methods=['GET'])
 @login_required
 def edit_school(id):
+    if not current_user.is_admin:
+        return redirect('/')
     school = School.query.get(id)
     return render_template('edit_school.html', school=school)
 
 @admin.route('/edit-school/<int:id>', methods=['POST'])
 @login_required
 def edit_school_post(id):
+    if not current_user.is_admin:
+        return redirect('/')
     school = School.query.get(id)
     data = request.form
 
@@ -163,6 +246,8 @@ def edit_school_post(id):
 @admin.route('/delete-school/<int:id>', methods=['DELETE'])
 @login_required
 def delete_school(id):
+    if not current_user.is_admin:
+        return redirect('/')
     school = School.query.get(id)
     db.session.delete(school)
     db.session.commit()
@@ -174,16 +259,20 @@ def delete_school(id):
 @login_required
 def view_menus():
     menus = MenuItem.query.all()
-    return render_template('menu.html' ,menus=menus)
+    return render_template('menu.html' ,menus=menus,current_user=current_user)
 
 @admin.route('/add-menu', methods=['GET'])
 @login_required
 def add_menu():
+    if not current_user.is_admin:
+        return redirect('/')
     return render_template('add-menu-item.html')
 
 @admin.route('/add-menu', methods=['POST'])
 @login_required
 def add_menu_post():
+    if not current_user.is_admin:
+        return redirect('/')
     data = request.form
     if not data['name'] or not data['price'] or not data['type'] or not data['cautions'] or not data['description']:
         flash('All fields are required')
@@ -205,12 +294,16 @@ def add_menu_post():
 @admin.route('/edit-menu/<int:id>', methods=['GET'])
 @login_required
 def edit_menu(id):
+    if not current_user.is_admin:
+        return redirect('/')
     menu = MenuItem.query.get(id)
     return render_template('edit-menu-item.html', menu=menu)
 
 @admin.route('/edit-menu/<int:id>', methods=['POST'])
 @login_required
 def edit_menu_post(id):
+    if not current_user.is_admin:
+        return redirect('/')
     data = request.form
     menu = MenuItem.query.get(id)
     menu.name = data['name']
@@ -226,6 +319,8 @@ def edit_menu_post(id):
 @admin.route('/delete-menu/<int:id>', methods=['DELETE'])
 @login_required
 def delete_menu(id):
+    if not current_user.is_admin:
+        return redirect('/')
     menu = MenuItem.query.get(id)
     db.session.delete(menu)
     db.session.commit()
@@ -235,17 +330,23 @@ def delete_menu(id):
 @admin.route('/coupons', methods=['GET'])
 @login_required
 def coupons():
+    if not current_user.is_admin:
+        return redirect('/')
     coupons = Coupons.query.all()
     return render_template('coupons.html', coupons=coupons)
 
 @admin.route('/add-coupon', methods=['GET'])
 @login_required
 def add_coupon_page():
+    if not current_user.is_admin:
+        return redirect('/')
     return render_template('add-coupon.html')
 
 @admin.route('/save_coupon', methods=['POST'])
 @login_required
 def add_coupon():
+    if not current_user.is_admin:
+        return redirect('/')
     data = request.form
     coupon = Coupons(
         code=data['code'],
@@ -260,6 +361,8 @@ expiration_date=datetime.strptime(data['expiration_date'], '%Y-%m-%dT%H:%M'),
 @admin.route('/delete-coupon/<int:id>', methods=['DELETE'])
 @login_required
 def delete_coupon(id):
+    if not current_user.is_admin:
+        return redirect('/')
     coupon = Coupons.query.get(id)
     db.session.delete(coupon)
     db.session.commit()
@@ -269,12 +372,16 @@ def delete_coupon(id):
 @admin.route('/edit-coupon/<int:id>', methods=['GET'])
 @login_required
 def edit_coupon(id):
+    if not current_user.is_admin:
+        return redirect('/')
     coupon = Coupons.query.get(id)
     return render_template('edit-coupon.html', coupon=coupon)
 
 @admin.route('/edit-coupon/<int:id>', methods=['POST'])
 @login_required
 def edit_coupon_post(id):
+    if not current_user.is_admin:
+        return redirect('/')
     data = request.form
     coupon = Coupons.query.get(id)
     coupon.code = data['code']

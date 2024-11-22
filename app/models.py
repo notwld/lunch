@@ -21,7 +21,7 @@ class Parent(UserMixin,db.Model):
     state = db.Column(db.String(50), nullable=False)
     city = db.Column(db.String(50), nullable=False)
     zip_code = db.Column(db.String(10), nullable=False)
-    
+    is_admin = db.Column(db.Boolean, nullable=False, default=False)
     # Contact Info
     home_phone = db.Column(db.String(15), nullable=True)
     cell_phone = db.Column(db.String(15), nullable=False)

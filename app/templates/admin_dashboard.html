@@ -9,7 +9,7 @@
          
          <li><a href="{{ url_for('admin.view_menus') }}"
              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-             >View Menus</a></li>
+             >View Menu</a></li>
          <li><a href="{{ url_for('admin.all_orders') }}"
              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
              >All Orders</a></li>
@@ -25,11 +25,143 @@
         </ul>
      
 </div>
-<div class="flex justify-center items-center mt-8">
-   <h1 class="text-3xl font-semibold text-center">
-       Total Revenue:
-    {{ total_revenue }} usd 
-   </h1>
+<div class="flex flex-col justify-center items-center mt-8">
+    <h1 class="text-3xl font-semibold text-center mb-8">
+        Admin Dashboard
+    </h1>
+    <h2 class="text-2xl font-semibold mb-6 text-center">Total Revenue: {{ total_revenue }} USD</h2>
+    
+    <!-- Grid Container for Charts -->
+    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8 mt-6 w-full px-6">
+        <!-- Total Revenue Chart -->
+        <div class="chart-container">
+            <h2 class="text-lg font-medium text-center mb-4">Revenue by Month</h2>
+            <canvas id="totalRevenueChart"></canvas>
+        </div>
+        
+        <!-- Top Paying Parents Chart -->
+        <div class="chart-container">
+            <h2 class="text-lg font-medium text-center mb-4">Top Paying Parents</h2>
+            <canvas id="topPayingParentsChart"></canvas>
+        </div>
+        
+        <!-- Top Selling Meals Chart -->
+        <div class="chart-container col-span-1">
+            <h2 class="text-lg font-medium text-center mb-4">Top Selling Meals</h2>
+            <canvas id="topSellingMealsChart"></canvas>
+        </div>
+        <div class="">
+            <h2 class="text-lg font-medium text-center mb-4">Recent Orders</h2>
+            {% for order in recent_orders %}
+            <div class="flex bg-white p-6 rounded-lg shadow-md mb-4 w-full justify-between items-center">
+                <h2 class="text-xl font-semibold mb-4">Order ID: {{ order.id }}</h2>
+                <p class="text-gray-700 mb-4">Order By: {{ order.parent.email }}</p>
+                <p class="text-gray-700 mb-4">Total Cost: ${{ order.total_cost }}</p>
+                <p class="text-gray-700 mb-4">Status: {{ order.status }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
+
+<script>
+    // Data passed from Flask
+    const totalRevenue = {{ total_revenue }};
+    const topParents = {{ top_parents|tojson }};
+    const topMeals = {{ top_meals|tojson }};
+
+    const revenueData = {{ revenue_data|tojson }};
+
+    // Prepare data for the chart
+    const months = revenueData.map(r => r.month); // Already formatted as "Nov-2024"
+    const revenues = revenueData.map(r => r.total_revenue);
+
+    // Render Revenue by Month Chart
+    new Chart(document.getElementById('totalRevenueChart'), {
+        type: 'bar',
+        data: {
+            labels: months,  // Months as labels
+            datasets: [{
+                label: 'Monthly Revenue',
+                data: revenues,  // Revenue data
+                backgroundColor: '#4caf50'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Revenue ($)'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    // Render Top Paying Parents Chart
+    new Chart(document.getElementById('topPayingParentsChart'), {
+        type: 'bar',
+        data: {
+            labels: topParents.map(p => p.name),
+            datasets: [{
+                label: 'Total Spent',
+                data: topParents.map(p => p.total_spent),
+                backgroundColor: ['#ff9800']
+            }]
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Parent'
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Total Spent ($)'
+                },
+                beginAtZero: true
+            }
+        }
+    });
+
+    // Render Top Selling Meals Chart
+    new Chart(document.getElementById('topSellingMealsChart'), {
+        type: 'pie',
+        data: {
+            labels: topMeals.map(m => m.name),
+            datasets: [{
+                label: 'Order Count',
+                data: topMeals.map(m => m.order_count),
+                backgroundColor: ['#2196f3', '#e91e63', '#9c27b0', '#ffeb3b', '#4caf50']
+            }]
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Meal'
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Order Count'
+                },
+                beginAtZero: true
+            }
+        }
+
+    });
+</script>
 </div>
 {% endblock %}

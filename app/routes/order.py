@@ -143,11 +143,6 @@ def checkout():
             # discount is in percentage
             order.total_cost *= (1 - discount / 100)
             order.total_cost = round(order.total_cost, 2)
-            coupon = Coupons.query.filter_by(code=coupon_code).first()
-            coupon.status = "Used"
-            db.session.add(coupon)
-
-
 
 
         db.session.commit()
@@ -257,17 +252,21 @@ def payment_post(id):
 
 @order.route('/rate', methods=['POST'])
 def rate_order():
-    order_id = request.form['order_id']
-    rating = float(request.form['rating'])
-    if rating < 1 or rating > 5:
-        flash('Invalid rating value. Please provide a rating between 1 and 5.')
-        return redirect('/')
-    if not order_id:
-        flash('Order ID not provided.')
-        return redirect('/')
-    order = Order.query.get(order_id)
-    if order:
-        order.rating = rating
-        db.session.commit()
+    try:
+        order_id = request.form['order_id']
+        rating = float(request.form['rating'])
+        if rating < 1 or rating > 5:
+            flash('Invalid rating value. Please provide a rating between 1 and 5.')
+            return redirect('/')
+        if not order_id:
+            flash('Order ID not provided.')
+            return redirect('/')
+        order = Order.query.get(order_id)
+        if order:
+            order.rating = rating
+            db.session.commit()
 
-    return redirect("/")
+        return redirect("/")
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}")
+        return redirect('/')
