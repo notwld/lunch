@@ -1,4 +1,4 @@
-from app.models import db, MenuItem
+from app.models import db, MenuItem,Parent,School
 from app import create_app
 # Define the menu items
 menu_items = [
@@ -180,6 +180,38 @@ menu_items = [
         "cautions": None,
     },
     {
+        "name": "No Entree",
+        "price": 0.0,
+        "type": "entrees",
+        "description": "No entree selected.",
+        "img_url": None,
+        "cautions": None,
+    },
+    {
+        "name": "No Desserts",
+        "price": 0.0,
+        "type": "desserts",
+        "description": "No dessert selected.",
+        "img_url": None,
+        "cautions": None,
+    },
+    {
+        "name": "No Produce",
+        "price": 0.0,
+        "type": "produce",
+        "description": "No Produce selected.",
+        "img_url": None,
+        "cautions": None,
+    },
+    {
+        "name": "No Sides",
+        "price": 0.0,
+        "type": "sides",
+        "description": "No side selected.",
+        "img_url": None,
+        "cautions": None,
+    },
+    {
         "name": "Orange Juice",
         "price": 1.5,
         "type": "drinks",
@@ -216,6 +248,34 @@ menu_items = [
 def seed_menu_items():
     """Seed the database with menu items."""
     with create_app().app_context():
+        db.create_all()
+
+        parent = Parent(
+            email="admin@admin.com",
+            first_name="Admin",
+            last_name="Admin",
+            address="123 Admin St",
+            state="CA",
+            city="Adminville",
+            zip_code="12345",
+            home_phone="123-456-7890",
+            cell_phone="123-456-7890",
+            work_phone="123-456-7890",
+            is_admin=True,
+        )
+        parent.set_password("admin")
+        db.session.add(parent)
+        db.session.commit()
+        school = School(
+            name="Test School",
+            address="123 School St",
+            phone_number="123-456-7890",
+            contact_name="Principal Test",
+            contact_email="principal@gmail.com",
+            special_instructions="None",
+        )
+        db.session.add(school)
+        db.session.commit()
         for item in menu_items:
             # Check if item already exists
             existing_item = MenuItem.query.filter_by(name=item["name"]).first()
